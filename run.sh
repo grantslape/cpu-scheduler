@@ -13,3 +13,5 @@ fi
 
 echo "activating virtual environment"
 source env/bin/activate
+echo "installing requirements"
+pip install -r requirements.txt
