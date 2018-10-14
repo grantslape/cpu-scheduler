@@ -6,6 +6,15 @@ from src.helpers.timedeltas import convert_td
 
 
 class Process:
+    """
+    An individual Process
+    Attributes:
+        created_at: the time the process should be created at
+        run_time: in milliseconds
+        total_time: total time taken to execute, inclusive of non run time
+        used: total time that has been partially worked on this process
+        completed_at: Arrow datetime this process was completed at
+    """
     def __init__(self,
                  activate_at: Arrow = utcnow(),
                  run_time: int = 60):

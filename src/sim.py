@@ -5,6 +5,16 @@ from arrow import utcnow
 
 
 class Simulator:
+    """
+    Simulator class
+    Attributes:
+        event_queue: Priority Queue of events to be processed
+        process_queue: Priority Queue of processed to be executed
+        done: list of completed processes
+        current_time: the current system time
+        busy: If the CPU is being used or not
+        usage: total CPU usage time in milliseconds
+    """
     def __init__(self):
         self.event_queue = PriorityQueue()
         self.process_queue = PriorityQueue()
@@ -23,4 +33,3 @@ class Simulator:
     def run(self):
         """Run the whole simulation"""
         print('Run the simulator and things')
-        pass

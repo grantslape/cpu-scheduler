@@ -10,7 +10,7 @@ class Event:
     }
 
     def __init__(self,
-                 created_at: datetime=datetime.datetime.today(),
-                 event_type: int=None):
+                 created_at: datetime = datetime.datetime.today(),
+                 event_type: int = None):
         self.created_at = created_at
         self.event_type = event_type
