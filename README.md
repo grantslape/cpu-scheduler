@@ -6,7 +6,7 @@ A simple discrete discrete-time event simulator for a number of CPU schedulers o
 
 ## Usage
 ```shell
-$ ./run.sh
+$ source run.sh
 $ /* DO THINGS */
 $ deactivate
 ```
