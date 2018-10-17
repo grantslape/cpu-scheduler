@@ -19,6 +19,7 @@ class Simulator:
         usage: total CPU usage time in milliseconds
         length: number of trials to run
         burst_lambda:
+        running_process:
     """
     def __init__(self,
                  length: int = 100,
@@ -33,6 +34,7 @@ class Simulator:
         self.length = length
         self.burst_lambda = burst_lambda
         self.rate = process_rate
+        self.running_process = None
 
     def process_event(self, event: Event):
         """Switch to process events"""
@@ -83,3 +85,6 @@ class Simulator:
 
             self.current_time = event.created_at
             self.process_event(event)
+
+            if not self.busy and not self.process_queue.empty():
+                self.running_process = self.process_queue.get()
