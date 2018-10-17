@@ -9,6 +9,7 @@ class Process:
     """
     An individual Process
     Attributes:
+        process_id: ID of process - uniqueness must be maintained by user
         created_at: the time the process should be created at
         run_time: in milliseconds
         total_time: total time taken to execute, inclusive of non run time
@@ -16,6 +17,7 @@ class Process:
         completed_at: Arrow datetime this process was completed at
     """
     def __init__(self,
+                 process_id: int,
                  activate_at: Arrow = utcnow(),
                  run_time: int = 60):
         """
@@ -23,6 +25,7 @@ class Process:
         :param activate_at: The time the process should activate at
         :param run_time: Total runtime of process in milliseconds
         """
+        self.id = process_id
         self.created_at = activate_at
         self.run_time = run_time
         self.total_time = None
