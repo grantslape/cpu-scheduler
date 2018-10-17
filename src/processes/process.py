@@ -2,8 +2,6 @@
 
 from arrow import Arrow, utcnow
 
-from src.helpers.timedeltas import convert_td
-
 
 class Process:
     """
@@ -11,22 +9,21 @@ class Process:
     Attributes:
         process_id: ID of process - uniqueness must be maintained by user
         created_at: the time the process should be created at
-        run_time: in milliseconds
+        run_time: in seconds
         total_time: total time taken to execute, inclusive of non run time
         used: total time that has been partially worked on this process
         completed_at: Arrow datetime this process was completed at
     """
     def __init__(self,
-                 process_id: int,
-                 activate_at: Arrow = utcnow(),
-                 run_time: int = 60):
+                 run_time: float,
+                 process_id: int):
         """
         Constructor for Process
-        :param activate_at: The time the process should activate at
-        :param run_time: Total runtime of process in milliseconds
+        :param run_time: Total runtime of process in seconds
+        :param process_id:
         """
         self.id = process_id
-        self.created_at = activate_at
+        self.created_at = None
         self.run_time = run_time
         self.total_time = None
         self.used = None
@@ -42,23 +39,23 @@ class Process:
                           other.run_time)
         return priority < other_priority
 
-    def set_completed(self, completed_at: Arrow) -> int:
+    def set_completed(self, completed_at: Arrow) -> float:
         """
         Set process as completed
         :param completed_at: datetime of completion
-        :return: total_time: int representing milliseconds
+        :return: total_time: seconds
         """
         self.completed_at = completed_at
-        self.total_time = convert_td(self.completed_at - self.created_at)
+        self.total_time = (self.completed_at - self.created_at).total_seconds()
         return self.total_time
 
-    def set_used(self, start: Arrow, end: Arrow) -> int:
+    def set_used(self, start: Arrow, end: Arrow) -> float:
         """
         Set partial amount of time used
         :param start: Arrow object representing work start time
         :param end: Arrow object representing work end time
-        :return: time remaining in ms as int
+        :return: time remaining in sec as float
         """
-        elapsed = convert_td(end - start)
+        elapsed = (end - start).total_seconds()
         self.used += elapsed
         return self.total_time - self.used
