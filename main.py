@@ -7,7 +7,7 @@ from src.sim import Simulator
 
 
 def main():
-    sim = Simulator()
+    sim = Simulator(method=Simulator.Method['FCFS'])
     sim.run()
 
 

@@ -1,6 +1,6 @@
 """Process"""
 
-from arrow import Arrow, utcnow
+from arrow import Arrow
 
 
 class Process:
@@ -8,7 +8,8 @@ class Process:
     An individual Process
     Attributes:
         process_id: ID of process - uniqueness must be maintained by user
-        created_at: the time the process should be created at
+        created_at: the Arrow datetime this process entered the ready queue
+        start_at: the Arrow datetime the process entered the CPU
         run_time: in seconds
         total_time: total time taken to execute, inclusive of non run time
         used: total time that has been partially worked on this process
@@ -16,26 +17,30 @@ class Process:
     """
     def __init__(self,
                  run_time: float,
-                 process_id: int):
+                 process_id: int,
+                 created_at: Arrow):
         """
         Constructor for Process
         :param run_time: Total runtime of process in seconds
+        TODO
         :param process_id:
+        :param created_at:
         """
         self.id = process_id
-        self.created_at = None
+        self.created_at = created_at
+        self.start_at = None
         self.run_time = run_time
         self.total_time = None
         self.used = None
         self.completed_at = None
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         """Implement comparable"""
         priority = (self.created_at,
-                    self.run_time - self.used,
+                    self.run_time - (self.used or 0),
                     self.run_time)
         other_priority = (other.created_at,
-                          other.run_time - other.used,
+                          other.run_time - (other.used or 0),
                           other.run_time)
         return priority < other_priority
 
@@ -46,7 +51,7 @@ class Process:
         :return: total_time: seconds
         """
         self.completed_at = completed_at
-        self.total_time = (self.completed_at - self.created_at).total_seconds()
+        self.total_time = (self.completed_at - self.start_at).total_seconds()
         return self.total_time
 
     def set_used(self, start: Arrow, end: Arrow) -> float:

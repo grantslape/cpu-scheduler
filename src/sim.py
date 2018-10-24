@@ -10,6 +10,11 @@ from src.processes.process import Process
 class Simulator:
     """
     Simulator class
+
+    For round-robin we may need to use a different queue
+    FOr earliest job first we need to choose which job to process
+    on each event process.
+
     Attributes:
         event_queue: Priority Queue of events to be processed
         process_queue: Priority Queue of processed to be executed
@@ -21,10 +26,17 @@ class Simulator:
         burst_lambda:
         running_process:
     """
+    Method = {
+        'FCFS': 1,
+        'SJF': 2,
+        'RR': 3
+    }
+
     def __init__(self,
                  length: int = 100,
                  burst_lambda: float = 0.06,
-                 process_rate: int = 1):
+                 process_rate: int = 1,
+                 method: int = 1):
         self.event_queue = PriorityQueue()
         self.process_queue = PriorityQueue()
         self.done = []
@@ -35,23 +47,39 @@ class Simulator:
         self.burst_lambda = burst_lambda
         self.rate = process_rate
         self.running_process = None
+        self.schedule = method
 
     def process_event(self, event: Event):
         """Switch to process events"""
         if event.event_type == Event.Types['NEW']:
-            self.process_new_event(event)
+            # TODO: in SJF, maybe switch process
+            self._process_new_event(event)
         elif event.event_type == Event.Types['COMPLETE']:
-            # TODO: COMPLETE
-            pass
+            self._process_complete_event()
         elif event.event_type == Event.Types['SWITCH']:
-            # TODO: COMPLETE
-            pass
+            self._process_switch_event()
         else:
             raise Exception("Unknown event, terminating: {}".format(str(event)))
 
-    def process_new_event(self, event: Event):
+    def _process_new_event(self, event: Event):
         """Process a new process event"""
+        p = event.process
+        p.start_at = self.current_time
+        # TODO: need to insert (ranking, p) by different
+        # TODO: scheduling algorithm
+        self.process_queue.put(p)
 
+    def _process_complete_event(self):
+        """Process a completion event"""
+        self.running_process.set_completed(self.current_time)
+        self.done.append(self.running_process)
+        self.running_process = None
+        self.busy = False
+
+    def _process_switch_event(self):
+        """Process a round_robin style switch event"""
+        # TODO: IMPLEMENT
+        pass
 
     def write_stats(self):
         """Write run statistics"""
@@ -61,22 +89,24 @@ class Simulator:
         last_event_time = self.current_time
         for i in range(self.length):
             activate_at = last_event_time.shift(
-                seconds=rand_exp_float(self.rate)
-            )
+                seconds=rand_exp_float(self.rate))
+
             p = Process(process_id=i,
-                        run_time=rand_exp_float(self.burst_lambda))
+                        run_time=rand_exp_float(self.burst_lambda),
+                        created_at=activate_at)
+
             self.event_queue.put(
                 Event(created_at=activate_at,
                       event_type=Event.Types['NEW'],
                       process=p))
+
             last_event_time = activate_at
 
     def run(self):
         """Run the whole simulation"""
-        print('Run the simulator and things')
         self.bootstrap()
+
         while not self.event_queue.empty():
-            # TODO: Update clock and usage first
             event = self.event_queue.get()
             if self.busy:
                 # Update usage time if CPU was busy in prev interval
@@ -86,5 +116,11 @@ class Simulator:
             self.current_time = event.created_at
             self.process_event(event)
 
+            # TODO: THIS DOES NOT WORK FOR SHORTEST JOB FIRST
+            # TODO: so factor this out to algo type function to run here
             if not self.busy and not self.process_queue.empty():
                 self.running_process = self.process_queue.get()
+                self.busy = True
+                # TODO: schedule complete event.
+
+        print("Sim done!")
