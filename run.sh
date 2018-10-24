@@ -15,3 +15,5 @@ echo "activating virtual environment"
 source env/bin/activate
 echo "installing requirements"
 pip install -r requirements.txt
+echo "Running simulation with default configuration"
+python main.py
