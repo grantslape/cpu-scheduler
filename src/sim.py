@@ -81,6 +81,29 @@ class Simulator:
         # TODO: IMPLEMENT
         pass
 
+    def check_running_process(self):
+        """Check running process and adjust appropriately"""
+        if self.schedule == self.Method['FCFS']:
+            if not self.busy and not self.process_queue.empty():
+                self.running_process = self.process_queue.get()
+                self.busy = True
+                self.running_process.start_at = self.current_time
+                # Queue completion event
+                self.event_queue.put(
+                    Event(created_at=self.current_time.shift(seconds=self.running_process.run_time),
+                          event_type=Event.Types['COMPLETE']))
+
+        elif self.schedule == self.Method['SJF']:
+            # TODO: NEED TO UNSCHEDULE COMPLETION EVENT
+            # maybe check top event on insert - if completion time is beyond top,
+            # don't schedule completion event
+            pass
+        elif self.schedule == self.Method['RR']:
+            # TODO: ONLY SCHEDULE COMPLETION IF WE WILL MAKE IT IN QUANTUM
+            pass
+        else:
+            raise Exception("Unknown schedule type: {}".format(self.schedule))
+
     def write_stats(self):
         """Write run statistics"""
 
@@ -116,11 +139,6 @@ class Simulator:
             self.current_time = event.created_at
             self.process_event(event)
 
-            # TODO: THIS DOES NOT WORK FOR SHORTEST JOB FIRST
-            # TODO: so factor this out to algo type function to run here
-            if not self.busy and not self.process_queue.empty():
-                self.running_process = self.process_queue.get()
-                self.busy = True
-                # TODO: schedule complete event.
+            self.check_running_process()
 
         print("Sim done!")
