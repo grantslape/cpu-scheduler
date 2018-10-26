@@ -1,6 +1,7 @@
 """Main Simulator"""
 from queue import PriorityQueue
 from arrow import utcnow
+import logging
 
 from src.Events.event import Event
 from src.commons.commons import rand_exp_float
@@ -36,7 +37,8 @@ class Simulator:
                  length: int = 100,
                  burst_lambda: float = 0.06,
                  process_rate: int = 1,
-                 method: int = 1):
+                 method: int = 1,
+                 log_level: int = logging.WARNING):
         self.event_queue = PriorityQueue()
         self.process_queue = PriorityQueue()
         self.done = []
@@ -49,6 +51,10 @@ class Simulator:
         self.running_process = None
         self.schedule = method
 
+        logging.basicConfig(filename='scheduler.log',
+                            level=log_level,
+                            format='%(asctime)s - %(levelname)s - %(message)s')
+
     def process_event(self, event: Event):
         """Switch to process events"""
         if event.event_type == Event.Types['NEW']:
@@ -59,7 +65,9 @@ class Simulator:
         elif event.event_type == Event.Types['SWITCH']:
             self._process_switch_event()
         else:
-            raise Exception("Unknown event, terminating: {}".format(str(event)))
+            message = "Unknown event, terminating: {}".format(str(event))
+            logging.critical(message)
+            raise Exception(message)
 
     def _process_new_event(self, event: Event):
         """Process a new process event"""
@@ -67,12 +75,14 @@ class Simulator:
         p.start_at = self.current_time
         # TODO: need to insert (ranking, p) by different
         # TODO: scheduling algorithm
+        logging.debug("Inserting process: {}".format(p))
         self.process_queue.put(p)
 
     def _process_complete_event(self):
         """Process a completion event"""
         self.running_process.set_completed(self.current_time)
         self.done.append(self.running_process)
+        logging.debug("Finishing process: {}".format(self.running_process))
         self.running_process = None
         self.busy = False
 
@@ -86,6 +96,7 @@ class Simulator:
         if self.schedule == self.Method['FCFS']:
             if not self.busy and not self.process_queue.empty():
                 self.running_process = self.process_queue.get()
+                logging.debug("starting process: {}".format(self.running_process))
                 self.busy = True
                 self.running_process.start_at = self.current_time
                 # Queue completion event
@@ -93,16 +104,21 @@ class Simulator:
                     Event(created_at=self.current_time.shift(seconds=self.running_process.run_time),
                           event_type=Event.Types['COMPLETE']))
 
+        # TODO: for both these, need to set process used
         elif self.schedule == self.Method['SJF']:
             # TODO: NEED TO UNSCHEDULE COMPLETION EVENT
             # maybe check top event on insert - if completion time is beyond top,
             # don't schedule completion event
+            # If a is a PriorityQueue object, You can use a.queue[0] to get the next item.
+            # p queues are heap sorted
             pass
         elif self.schedule == self.Method['RR']:
             # TODO: ONLY SCHEDULE COMPLETION IF WE WILL MAKE IT IN QUANTUM
             pass
         else:
-            raise Exception("Unknown schedule type: {}".format(self.schedule))
+            message = "Unknown schedule type: {}".format(self.schedule)
+            logging.critical(message)
+            raise Exception(message)
 
     def write_stats(self):
         """Write run statistics"""
