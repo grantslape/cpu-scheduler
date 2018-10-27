@@ -1,7 +1,7 @@
 """Main Simulator"""
+import logging
 from queue import PriorityQueue
 from arrow import utcnow
-import logging
 
 from src.event import Event
 from src.commons.commons import rand_exp_float
@@ -64,7 +64,7 @@ class Simulator:
         elif event.event_type == Event.Types['SWITCH']:
             self._process_switch_event()
         else:
-            message = "Unknown event, terminating: {}".format(str(event))
+            message = "Unknown event, terminating: %s".format(str(event))
             logging.critical(message)
             raise Exception(message)
 
@@ -74,14 +74,14 @@ class Simulator:
         p.start_at = self.current_time
         # TODO: need to insert (ranking, p) by different
         # TODO: scheduling algorithm
-        logging.debug("Inserting process: {}".format(p))
+        logging.debug("Inserting process: %s", p)
         self.process_queue.put(p)
 
     def _process_complete_event(self):
         """Process a completion event"""
         self.running_process.set_completed(self.current_time)
         self.done.append(self.running_process)
-        logging.debug("Finishing process: {}".format(str(self.running_process)))
+        logging.debug("Finishing process: %s", self.running_process)
         self.running_process = None
         self.busy = False
 
@@ -105,7 +105,7 @@ class Simulator:
                 Event(created_at=activate_at,
                       event_type=Event.Types['NEW'],
                       process=p))
-            logging.debug('Queued creation event for process: {}'.format(str(p)))
+            logging.debug('Queued creation event for process: %s', p)
 
             last_event_time = activate_at
 

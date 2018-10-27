@@ -1,3 +1,4 @@
+"""Event class"""
 from arrow import Arrow, utcnow
 
 from src.process import Process
