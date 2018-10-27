@@ -57,6 +57,13 @@ class Modeller:
         :param name: name of csv
         :return:
         """
+        # TODO: THIS IS COOL AND ALL BUT WE NEED TO PLOT LAMBDA AS X
+        # AND HAVE 4 PLOTS FOR EACH OF THE FOLLOWING METRICS AS Y:
+        # 1) AVERAGE TURNAROUND TIME
+        # 2) TOTAL THROUGHPUT
+        # 3) CPU UTILIZATION
+        # 4) AVERAGE # OF PROCESSES IN READY QUEUE (SEE EMAIL)
+        # Different color line for each of the scheduler types (RR twice)
         data = pd.read_csv('{0}.csv'.format(path))
         data.plot(x='id', y='total_time')
         plt.savefig('ax')
