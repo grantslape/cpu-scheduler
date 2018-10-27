@@ -51,9 +51,9 @@ class Simulator:
         self.running_process = None
         self.schedule = method
 
-        logging.basicConfig(filename='scheduler.log',
+        logging.basicConfig(filename='logs/scheduler.log',
                             level=log_level,
-                            format='%(asctime)s - %(levelname)s - %(message)s')
+                            format='%(levelname)s - %(message)s')
 
     def process_event(self, event: Event):
         """Switch to process events"""
@@ -82,7 +82,7 @@ class Simulator:
         """Process a completion event"""
         self.running_process.set_completed(self.current_time)
         self.done.append(self.running_process)
-        logging.debug("Finishing process: {}".format(self.running_process))
+        logging.debug("Finishing process: {}".format(str(self.running_process)))
         self.running_process = None
         self.busy = False
 
@@ -96,7 +96,7 @@ class Simulator:
         if self.schedule == self.Method['FCFS']:
             if not self.busy and not self.process_queue.empty():
                 self.running_process = self.process_queue.get()
-                logging.debug("starting process: {}".format(self.running_process))
+                logging.debug("starting process: {}".format(str(self.running_process)))
                 self.busy = True
                 self.running_process.start_at = self.current_time
                 # Queue completion event
@@ -138,6 +138,7 @@ class Simulator:
                 Event(created_at=activate_at,
                       event_type=Event.Types['NEW'],
                       process=p))
+            logging.debug('Queued creation event for process: {}'.format(str(p)))
 
             last_event_time = activate_at
 
@@ -157,4 +158,4 @@ class Simulator:
 
             self.check_running_process()
 
-        print("Sim done!")
+        logging.info('Sim done!')
