@@ -22,6 +22,7 @@ def rand_exp_float(given_lambda: float) -> float:
     :param given_lambda: lambda for exponential distribution
     :return x: random number following exp distribution
     """
+    # TODO: use numpy and seed to have deterministic results
     u = x = 0
     while u == 0:
         u = randint(sf['RAND_MIN'], sf['RAND_MAX']) / sf['RAND_MAX']

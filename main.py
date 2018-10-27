@@ -6,10 +6,11 @@ CPU Scheduler Simulator
 import logging
 
 from src.sim import Simulator
+from src.scheduler import Scheduler
 
 
 def main():
-    sim = Simulator(method=Simulator.Method['FCFS'],
+    sim = Simulator(method=Scheduler.Types['FCFS'],
                     log_level=logging.DEBUG)
     sim.run()
 

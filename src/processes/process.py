@@ -23,7 +23,7 @@ class Process:
         """
         Constructor for Process
         :param run_time: Total runtime of process in seconds
-        TODO
+        TODO attributes
         :param process_id:
         :param created_at:
         """
@@ -47,10 +47,10 @@ class Process:
 
     def __repr__(self):
         """String output"""
-        return '{"id":' + str(self.id) + ',"created_at":' + str(self.created_at) + \
-               ',"start_at":' + str(self.start_at) + ',"run_time":' + \
-               str(self.run_time) + ',"total_time":' + str(self.total_time) + \
-               ',"used":' + str(self.used) + ',"completed_at":' + str(self.completed_at) + '}'
+        return '{"id":' + str(self.id) + ',"created_at":"' + str(self.created_at) + \
+               '","start_at":"' + str(self.start_at) + '","run_time":"' + \
+               str(self.run_time) + '","total_time":"' + str(self.total_time) + \
+               '","used":"' + str(self.used) + '","completed_at":"' + str(self.completed_at) + '"}'
 
     def set_completed(self, completed_at: Arrow) -> float:
         """
