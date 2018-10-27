@@ -1,6 +1,6 @@
 from arrow import Arrow, utcnow
 
-from src.processes.process import Process
+from src.process import Process
 
 
 class Event:

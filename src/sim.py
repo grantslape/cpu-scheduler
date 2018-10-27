@@ -3,9 +3,9 @@ from queue import PriorityQueue
 from arrow import utcnow
 import logging
 
-from src.Events.event import Event
+from src.event import Event
 from src.commons.commons import rand_exp_float
-from src.processes.process import Process
+from src.process import Process
 from src.scheduler import Scheduler
 
 
@@ -87,38 +87,6 @@ class Simulator:
         # TODO: IMPLEMENT
         pass
 
-    def _fcfs_queue_process(self):
-        """Queue a process with FCFS scheduling"""
-        if not self.busy and not self.process_queue.empty():
-            self.running_process = self.process_queue.get()
-            logging.debug("starting process: {}".format(str(self.running_process)))
-            self.busy = True
-            self.running_process.start_at = self.current_time
-            # Queue completion event
-            self.event_queue.put(
-                Event(created_at=self.current_time.shift(seconds=self.running_process.run_time),
-                      event_type=Event.Types['COMPLETE']))
-
-    def check_running_process(self):
-        """Check running process and adjust appropriately"""
-        if self.scheduler.type == self.scheduler.Types['FCFS']:
-            self._fcfs_queue_process()
-        # TODO: for both these, need to set process used
-        elif self.scheduler.type == self.scheduler.Types['SJF']:
-            # TODO: NEED TO UNSCHEDULE COMPLETION EVENT
-            # maybe check top event on insert - if completion time is beyond top,
-            # don't schedule completion event
-            # If a is a PriorityQueue object, You can use a.queue[0] to get the next item.
-            # p queues are heap sorted
-            pass
-        elif self.scheduler.type == self.scheduler.Types['RR']:
-            # TODO: ONLY SCHEDULE COMPLETION IF WE WILL MAKE IT IN QUANTUM
-            pass
-        else:
-            message = "Unknown schedule type: {}".format(self.scheduler.type)
-            logging.critical(message)
-            raise Exception(message)
-
     def write_stats(self):
         """Write run statistics"""
         # TODO: CSV WRITER
@@ -158,6 +126,6 @@ class Simulator:
             self.current_time = event.created_at
             self.process_event(event)
 
-            self.check_running_process()
+            self.scheduler.check_running_process()
 
         logging.info('Sim done!')
