@@ -49,13 +49,13 @@ class Scheduler:
 
     def _fcfs_queue_process(self):
         """Queue a process with FCFS scheduling"""
-        if not self.busy and not self.parent.process_queue.empty():
-            self.running_process = self.parent.process_queue.get()
-            logging.debug("starting process: {}".format(str(self.running_process)))
-            self.busy = True
-            self.running_process.start_at = self.parent.current_time
+        if not self.parent.busy and not self.parent.process_queue.empty():
+            self.parent.running_process = self.parent.process_queue.get()
+            logging.debug("starting process: {}".format(str(self.parent.running_process)))
+            self.parent.busy = True
+            self.parent.running_process.start_at = self.parent.current_time
             # Queue completion event
-            create = self.parent.current_time.shift(seconds=self.running_process.run_time)
+            create = self.parent.current_time.shift(seconds=self.parent.running_process.run_time)
             self.parent.event_queue.put(
                 Event(created_at=create,
                       event_type=Event.Types['COMPLETE']))
