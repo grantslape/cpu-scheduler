@@ -130,7 +130,7 @@ class Simulator:
             activate_at = last_event_time.shift(
                 seconds=rand_exp_float(self.rate))
 
-            p = Process(process_id=i,
+            p = Process(process_id=i + 1,
                         run_time=rand_exp_float(self.burst_lambda),
                         created_at=activate_at)
 
