@@ -31,24 +31,17 @@ class Scheduler:
         """Check running process and adjust appropriately"""
         if self.type == self.Types['FCFS']:
             self._fcfs_queue_process()
-        # TODO: for both these, need to set process used
         elif self.type == self.Types['SJF']:
-            # TODO:
-            # maybe check top event on insert - if completion time is beyond top,
-            # don't schedule completion event
-            # If a is a PriorityQueue object, You can use a.queue[0] to get the next item.
-            # p queues are heap sorted
-            pass
+            self._sjf_queue_process()
         elif self.type == self.Types['RR']:
-            # TODO: ONLY SCHEDULE COMPLETION IF WE WILL MAKE IT IN QUANTUM
-            pass
+            self._rr_queue_process()
         else:
             message = "Unknown schedule type: {}".format(self.type)
             logging.critical(message)
             raise Exception(message)
 
     def _fcfs_queue_process(self):
-        """Queue a process with FCFS scheduling"""
+        """Queue a process with first come first served scheduling"""
         if not self.parent.busy and not self.parent.process_queue.empty():
             self.parent.running_process = self.parent.process_queue.get()
             logging.debug("starting process: %s", self.parent.running_process)
@@ -59,3 +52,18 @@ class Scheduler:
             self.parent.event_queue.put(
                 Event(created_at=create,
                       event_type=Event.Types['COMPLETE']))
+
+    # TODO: for both these, need to set process used
+    def _sjf_queue_process(self):
+        """Queue a process with shortest job first scheduling"""
+        # TODO:
+        # maybe check top event on insert - if completion time is beyond top,
+        # don't schedule completion event
+        # If a is a PriorityQueue object, You can use a.queue[0] to get the next item.
+        # p queues are heap sorted
+        pass
+
+    def _rr_queue_process(self):
+        """Queue a process with round robin scheduling"""
+        # TODO: ONLY SCHEDULE COMPLETION IF WE WILL MAKE IT IN QUANTUM
+        pass
