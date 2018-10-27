@@ -33,7 +33,7 @@ class Scheduler:
             self._fcfs_queue_process()
         # TODO: for both these, need to set process used
         elif self.type == self.Types['SJF']:
-            # TODO: NEED TO UNSCHEDULE COMPLETION EVENT
+            # TODO:
             # maybe check top event on insert - if completion time is beyond top,
             # don't schedule completion event
             # If a is a PriorityQueue object, You can use a.queue[0] to get the next item.
