@@ -46,11 +46,21 @@ class Process:
         return priority < other_priority
 
     def __repr__(self):
-        """String output"""
+        """JSON output"""
         return '{"id":' + str(self.id) + ',"created_at":"' + str(self.created_at) + \
                '","start_at":"' + str(self.start_at) + '","run_time":"' + \
                str(self.run_time) + '","total_time":"' + str(self.total_time) + \
                '","used":"' + str(self.used) + '","completed_at":"' + str(self.completed_at) + '"}'
+
+    # def __repr__(self):
+    #     members = (self.id,
+    #                self.created_at,
+    #                self.start_at,
+    #                self.run_time,
+    #                self.total_time,
+    #                self.used,
+    #                self.completed_at)
+    #     return "{0},{1},{2},{3},{4},{5},{6}".format(*members)
 
     def set_completed(self, completed_at: Arrow) -> float:
         """

@@ -4,6 +4,7 @@ CS 4328.001 Operating Systems
 CPU Scheduler Simulator
 """
 import logging
+from arrow import utcnow
 
 from src.sim import Simulator
 from src.scheduler import Scheduler
@@ -11,7 +12,8 @@ from src.scheduler import Scheduler
 
 def main():
     sim = Simulator(method=Scheduler.Types['FCFS'],
-                    log_level=logging.DEBUG)
+                    log_level=logging.DEBUG,
+                    created_at=utcnow())
     sim.run()
 
 

@@ -1,7 +1,8 @@
 """Main Simulator"""
 import logging
+import os
 from queue import PriorityQueue
-from arrow import utcnow
+from arrow import Arrow
 
 from src.event import Event
 from src.commons.commons import rand_exp_float
@@ -28,10 +29,12 @@ class Simulator:
         length: number of trials to run
         burst_lambda:
         running_process:
+        created_at: used as file tag
     """
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self,
+                 created_at: Arrow,
                  length: int = 100,
                  burst_lambda: float = 0.06,
                  process_rate: int = 1,
@@ -40,7 +43,7 @@ class Simulator:
         self.event_queue = PriorityQueue()
         self.process_queue = PriorityQueue()
         self.done = []
-        self.current_time = utcnow()
+        self.current_time = created_at
         self.busy = False
         self.usage = 0
         self.running_process = None
@@ -53,7 +56,12 @@ class Simulator:
 
         self.scheduler = Scheduler(parent=self, method=method)
 
-        self.modeller = Modeller(path='data/')
+        path = 'data'
+        timestamp = self.current_time.timestamp
+        os.mkdir(path + '/' + str(timestamp))
+        os.mkdir(path + '/' + str(timestamp) + '/' + Modeller.DATA_PATH)
+        self.modeller = Modeller(path=path,
+                                 created_at=timestamp)
 
         logging.basicConfig(filename='logs/scheduler.log',
                             level=log_level,
@@ -130,4 +138,8 @@ class Simulator:
 
             self.scheduler.check_running_process()
 
+        tag = 'type' + str(self.scheduler.type) + '_burst' + \
+              str(self.config['burst_lambda']) + '_rate' + \
+              str(self.config['rate'])
+        self.modeller.write_stats(self.done, tag)
         logging.info('Sim done!')
