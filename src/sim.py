@@ -29,6 +29,8 @@ class Simulator:
         burst_lambda:
         running_process:
     """
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(self,
                  length: int = 100,
                  burst_lambda: float = 0.06,
@@ -41,10 +43,13 @@ class Simulator:
         self.current_time = utcnow()
         self.busy = False
         self.usage = 0
-        self.length = length
-        self.burst_lambda = burst_lambda
-        self.rate = process_rate
         self.running_process = None
+
+        self.config = {
+            'length': length,
+            'burst_lambda': burst_lambda,
+            'rate': process_rate
+        }
 
         self.scheduler = Scheduler(parent=self, method=method)
 
@@ -64,7 +69,7 @@ class Simulator:
         elif event.event_type == Event.Types['SWITCH']:
             self._process_switch_event()
         else:
-            message = "Unknown event, terminating: %s".format(str(event))
+            message = "Unknown event, terminating: {}".format(str(event))
             logging.critical(message)
             raise Exception(message)
 
@@ -93,12 +98,12 @@ class Simulator:
     def bootstrap(self):
         """Bootstrap Event Queue"""
         last_event_time = self.current_time
-        for i in range(self.length):
+        for i in range(self.config['length']):
             activate_at = last_event_time.shift(
-                seconds=rand_exp_float(self.rate))
+                seconds=rand_exp_float(self.config['rate']))
 
             p = Process(process_id=i + 1,
-                        run_time=rand_exp_float(self.burst_lambda),
+                        run_time=rand_exp_float(self.config['burst_lambda']),
                         created_at=activate_at)
 
             self.event_queue.put(
