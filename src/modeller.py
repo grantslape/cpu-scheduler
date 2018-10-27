@@ -3,6 +3,9 @@ import csv
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from os import rename
+
+from src.process import Process
 
 
 class Modeller:
@@ -20,7 +23,7 @@ class Modeller:
         self.abs_path = path
         self.created_at = created_at
 
-    def write_stats(self, in_list: list, path: str):
+    def write_stats(self, in_list: [Process], path: str):
         """
         Write raw process run statistics
         :param in_list: list of processes to be written
@@ -32,7 +35,31 @@ class Modeller:
 
         with open(identifier, 'w', newline='') as file:
             writer = csv.writer(file, delimiter=',')
+            # Write CSV Headers
             writer.writerow(vars(in_list[0]))
+            # Write row for each process
             for p in in_list:
-                csv_output = (p.id, p.created_at, p.start_at, p.run_time, p.total_time, p.used, p.completed_at)
+                csv_output = (p.id,
+                              p.created_at,
+                              p.start_at,
+                              p.run_time,
+                              p.total_time,
+                              p.used,
+                              p.completed_at)
                 writer.writerow(csv_output)
+
+        return '{0}/{1}/{2}/{3}'.format(*members), path
+
+    def plot(self, path: str, name: str):
+        """
+        Example of plotting a given CSV
+        :param path: path to CSV to be plotted
+        :param name: name of csv
+        :return:
+        """
+        data = pd.read_csv('{0}.csv'.format(path))
+        data.plot(x='id', y='total_time')
+        plt.savefig('ax')
+        members = (self.abs_path, self.created_at, Modeller.PLOT_PATH, name)
+        identifier = "{0}/{1}/{2}/{3}.png".format(*members)
+        rename('ax.png', identifier)

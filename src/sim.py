@@ -60,6 +60,7 @@ class Simulator:
         timestamp = self.current_time.timestamp
         os.mkdir(path + '/' + str(timestamp))
         os.mkdir(path + '/' + str(timestamp) + '/' + Modeller.DATA_PATH)
+        os.mkdir(path + '/' + str(timestamp) + '/' + Modeller.PLOT_PATH)
         self.modeller = Modeller(path=path,
                                  created_at=timestamp)
 
@@ -141,5 +142,6 @@ class Simulator:
         tag = 'type' + str(self.scheduler.type) + '_burst' + \
               str(self.config['burst_lambda']) + '_rate' + \
               str(self.config['rate'])
-        self.modeller.write_stats(self.done, tag)
+        path, filename = self.modeller.write_stats(self.done, tag)
+        self.modeller.plot(path, filename)
         logging.info('Sim done!')
