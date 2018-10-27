@@ -5,6 +5,7 @@ import logging
 
 from src.event import Event
 from src.commons.commons import rand_exp_float
+from src.modeller import Modeller
 from src.process import Process
 from src.scheduler import Scheduler
 
@@ -14,7 +15,7 @@ class Simulator:
     Simulator class
 
     For round-robin we may need to use a different queue
-    FOr earliest job first we need to choose which job to process
+    For earliest job first we need to choose which job to process
     on each event process.
 
     Attributes:
@@ -46,6 +47,8 @@ class Simulator:
         self.running_process = None
 
         self.scheduler = Scheduler(parent=self, method=method)
+
+        self.modeller = Modeller(path='data/')
 
         logging.basicConfig(filename='logs/scheduler.log',
                             level=log_level,
@@ -85,12 +88,6 @@ class Simulator:
     def _process_switch_event(self):
         """Process a round_robin style switch event"""
         # TODO: IMPLEMENT
-        pass
-
-    def write_stats(self):
-        """Write run statistics"""
-        # TODO: CSV WRITER
-        # MAYBE DATA MODELLER IN ANOTHER CLASS
         pass
 
     def bootstrap(self):
