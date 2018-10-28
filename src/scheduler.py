@@ -61,7 +61,8 @@ class Scheduler:
             self.parent.running_process = self.parent.process_queue.get()
         logging.debug("%s: starting process: %s", self.parent.current_time, self.parent.running_process)
         self.parent.busy = True
-        self.parent.running_process.start_at = self.parent.current_time
+        if not self.parent.running_process.start_at:
+            self.parent.running_process.start_at = self.parent.current_time
 
     def _fcfs_queue_process(self):
         """start a process with first come first served scheduling"""

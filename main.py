@@ -27,7 +27,7 @@ def main():
     length = args.runs
     rates = [i + 1 for i in range(args.max_rate)]
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         for key, value in Scheduler.Types.items():
             kwargs = {
                 'method': value,
