@@ -5,6 +5,7 @@ CPU Scheduler Simulator
 """
 import logging
 import argparse
+import numpy as np
 from arrow import utcnow, Arrow
 
 from src.sim import Simulator
@@ -16,6 +17,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('runs', type=int, help='Number of trials')
     parser.add_argument('max_rate', type=int, help='max processes per second')
+    parser.add_argument('seed', type=int, help='base seed for PRNG. base_seed + type + rate')
     parser.add_argument('-v', '--verbose', action='store_true', help='set log level to debug')
     args = parser.parse_args()
 
@@ -29,18 +31,21 @@ def main():
             'method': value,
             'prefix': prefix,
             'level': level,
-            'quantum': 0.1,
+            'quantum': 0.01,
             'rate': None,
             'length': length
         }
 
         for rate in rates:
+            # concat base_seed
+            np.random.seed(int(str(args.seed) + str(value) + str(rate)))
             kwargs['rate'] = rate
             run_sim(**kwargs)
 
         if key == 'RR':
             kwargs['quantum'] = 0.2
             for rate in rates:
+                np.random.seed(int(str(args.seed) + str(value) + str(rate)))
                 kwargs['rate'] = rate
                 run_sim(**kwargs)
 

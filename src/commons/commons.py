@@ -1,31 +1,11 @@
 """Helper Functions"""
-from datetime import timedelta
-from math import log
-from random import randint
-
-from src.commons.settings import settings as sf
-
-
-def convert_td(delta: timedelta) -> int:
-    """
-    DEPRECATED
-    Convert a timedelta to milliseconds rounded to nearest int
-    :param delta: timedelta to be converted
-    :return: td in milliseconds as integer
-    """
-    return int(delta.total_seconds() * sf['SEC_TO_MILLI'])
+import numpy as np
 
 
 def rand_exp_float(given_lambda: float) -> float:
     """
     Generate a random number that follows an exponential distribution
     :param given_lambda: lambda for exponential distribution
-    :return x: random number following exp distribution
+    :return psuedorandom number following exp distribution
     """
-    # TODO: use numpy and seed to have deterministic results
-    u = x = 0
-    while u == 0:
-        u = randint(sf['RAND_MIN'], sf['RAND_MAX']) / sf['RAND_MAX']
-        x = (-1 / given_lambda) * log(u)
-
-    return x
+    return np.random.exponential(scale=1/given_lambda)
