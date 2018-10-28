@@ -73,19 +73,20 @@ class Simulator:
         log_path = Path(str(data_path.parent) + '/logs')
         if not log_path.exists():
             log_path.mkdir()
-        specific_path = '/scheduler_{0}_{1}'.format(method, process_rate)
-        if method == Scheduler.Types['RR']:
-            specific_path += '_{}'.format(quantum)
+        # specific_path = '/scheduler_{0}_{1}'.format(method, process_rate)
+        # if method == Scheduler.Types['RR']:
+        #     specific_path += '_{}'.format(quantum)
+        specific_path = '/scheduler'
         specific_path += '.log'
         log_path = Path(str(log_path) + specific_path)
-        log_path.touch()
+        if not log_path.exists():
+            log_path.touch()
 
         self.modeller = Modeller(path=path,
                                  created_at=timestamp)
-        # TODO: Need to use a real logging config
         logging.basicConfig(filename=str(log_path),
                             level=log_level,
-                            format='%(levelname)s - %(message)s')
+                            format='%(threadName)s: %(levelname)s - %(message)s')
 
     def process_event(self, event: Event):
         """Switch to process events"""
