@@ -1,5 +1,6 @@
 """Scheduler with baked in algorithm"""
 import logging
+from queue import PriorityQueue
 
 from src.event import Event
 from src.process import Process
@@ -24,9 +25,10 @@ class Scheduler:
         'RR': 3
     }
 
-    def __init__(self, parent, method: int):
+    def __init__(self, parent, method: int, quantum: float = None):
         self.parent = parent
         self.type = method
+        self.quantum = quantum
         
     def check_running_process(self):
         """Check running process and adjust appropriately"""
@@ -42,19 +44,22 @@ class Scheduler:
             raise Exception(message)
 
     def put_process(self, process: Process):
-        """Insert a new process into the queue"""
-        # TODO: need to insert (ranking, p) by different algo
-        logging.debug("Inserting process: %s", process)
+        """Insert a process into the queue"""
+        logging.debug("%s: Inserting process: %s", self.parent.current_time, process)
         if self.type == self.Types['FCFS']:
             self.parent.process_queue.put((process.created_at, process))
         elif self.type == self.Types['SJF']:
             self.parent.process_queue.put((process.run_time - process.used, process))
         elif self.type == self.Types['RR']:
-            self.parent.process_queue.put((process.created_at, process))
+            self.parent.process_queue.put(process)
 
     def _start_process(self):
-        self.parent.running_process = self.parent.process_queue.get()[1]
-        logging.debug("starting process: %s", self.parent.running_process)
+        # Hack to support simple queues.
+        if isinstance(self.parent.process_queue, PriorityQueue):
+            self.parent.running_process = self.parent.process_queue.get()[1]
+        else:
+            self.parent.running_process = self.parent.process_queue.get()
+        logging.debug("%s: starting process: %s", self.parent.current_time, self.parent.running_process)
         self.parent.busy = True
         self.parent.running_process.start_at = self.parent.current_time
 
@@ -69,35 +74,28 @@ class Scheduler:
                       event_type=Event.Types['COMPLETE'])
             )
 
-    # TODO: for both these, need to set process used
+    def _sjf_insert_process(self, process: Process):
+        """Insert process by sjf"""
+        self.parent.process_queue.put((process.run_time - process.used, process))
+
     def _sjf_queue_process(self):
         """start a process with shortest job first scheduling"""
         if not self.parent.process_queue.empty():
+            # Do we need to preempt a process?
             if self.parent.busy:
                 process = self.parent.running_process
-                remain = process.run_time - process.used
+                remain = process.get_remaining()
                 next_process = self.parent.process_queue.queue[0][1]
                 if next_process.run_time - next_process.used < remain:
-                    logging.debug("offloading process: %s", process)
+                    logging.debug("%s: offloading process: %s", self.parent.current_time, process)
                     self.put_process(process)
                     self._start_process()
             else:
                 self._start_process()
-        #
-        # # check for completion before next event
-        # if self.parent.busy:
-        #     next_time = self.parent.event_queue.queue[0].created_at
-        #     process = self.parent.running_process
-        #     remain = process.run_time - process.used
-        #     estimate = self.parent.current_time.shift(seconds=remain)
-        #     if estimate < next_time:
-        #         self.parent.event_queue.put(
-        #             Event(created_at=estimate,
-        #                   event_type=Event.Types['COMPLETE']))
 
+        # Check if we need to queue a completion event
         if self.parent.busy:
-            process = self.parent.running_process
-            remain = process.run_time - process.used
+            remain = self.parent.running_process.get_remaining()
             estimate = self.parent.current_time.shift(seconds=remain)
             if not self.parent.event_queue.empty():
                 next_time = self.parent.event_queue.queue[0].created_at
@@ -111,9 +109,17 @@ class Scheduler:
 
     def _rr_queue_process(self):
         """start a process with round robin scheduling"""
-        # TODO: ONLY SCHEDULE COMPLETION IF WE WILL MAKE IT IN QUANTUM
-        pass
-
-    def _sjf_insert_process(self, process: Process):
-        """Insert process by sjf"""
-        self.parent.process_queue.put((process.run_time - process.used, process))
+        if not self.parent.busy and not self.parent.process_queue.empty():
+            self._start_process()
+            if self.parent.running_process.get_remaining() < self.quantum:
+                logging.debug('scheduling RR completion: %s', self.parent.running_process)
+                self.parent.event_queue.put(
+                    Event(created_at=self.parent.current_time.shift(seconds=self.parent.running_process.get_remaining()),
+                          event_type=Event.Types['COMPLETE'])
+                )
+            else:
+                logging.debug('scheduling RR switch')
+                self.parent.event_queue.put(
+                    Event(created_at=self.parent.current_time.shift(seconds=self.quantum),
+                          event_type=Event.Types['SWITCH'])
+                )

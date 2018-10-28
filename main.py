@@ -11,9 +11,14 @@ from src.scheduler import Scheduler
 
 
 def main():
-    sim = Simulator(method=Scheduler.Types['SJF'],
-                    log_level=logging.DEBUG,
-                    created_at=utcnow())
+    prefix = utcnow()
+
+    sim = Simulator(
+        method=Scheduler.Types['RR'],
+        log_level=logging.DEBUG,
+        created_at=prefix,
+        quantum=0.1
+    )
     sim.run()
 
 

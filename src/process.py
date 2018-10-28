@@ -82,3 +82,7 @@ class Process:
         elapsed = (end - start).total_seconds()
         self.used += elapsed
         return self.total_time - self.used
+
+    def get_remaining(self) -> float:
+        """Get remaining run time"""
+        return self.run_time - self.used

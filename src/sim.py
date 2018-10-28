@@ -1,7 +1,7 @@
 """Main Simulator"""
 import logging
 import os
-from queue import PriorityQueue
+from queue import PriorityQueue, Queue
 from arrow import Arrow
 
 from src.event import Event
@@ -24,7 +24,7 @@ class Simulator:
         process_queue: Priority Queue of processed to be executed
         done: list of completed processes
         current_time: the current system time
-        busy: If the CPU is being used or not
+        busy: If the CPU is being used or not TODO: Replace this with interpreting running_process?
         usage: total CPU usage time in milliseconds
         length: number of trials to run
         burst_lambda:
@@ -39,9 +39,10 @@ class Simulator:
                  burst_lambda: float = 0.06,
                  process_rate: int = 1,
                  method: int = 1,
-                 log_level: int = logging.WARNING):
+                 log_level: int = logging.WARNING,
+                 quantum: float = None):
         self.event_queue = PriorityQueue()
-        self.process_queue = PriorityQueue()
+        self.process_queue = PriorityQueue() if method != Scheduler.Types['RR'] else Queue()
         self.done = []
         self.current_time = created_at
         self.busy = False
@@ -51,10 +52,13 @@ class Simulator:
         self.config = {
             'length': length,
             'burst_lambda': burst_lambda,
-            'rate': process_rate
+            'rate': process_rate,
+            'quantum': quantum
         }
 
-        self.scheduler = Scheduler(parent=self, method=method)
+        self.scheduler = Scheduler(parent=self,
+                                   method=method,
+                                   quantum=self.config['quantum'])
 
         path = 'data'
         timestamp = self.current_time.timestamp
@@ -71,7 +75,6 @@ class Simulator:
     def process_event(self, event: Event):
         """Switch to process events"""
         if event.event_type == Event.Types['NEW']:
-            # TODO: in SJF, maybe switch process
             self._process_new_event(event)
         elif event.event_type == Event.Types['COMPLETE']:
             self._process_complete_event()
@@ -92,14 +95,16 @@ class Simulator:
         """Process a completion event"""
         self.running_process.set_completed(self.current_time)
         self.done.append(self.running_process)
-        logging.debug("Finishing process: %s", self.running_process)
+        logging.debug("%s: Finishing process: %s", self.current_time, self.running_process)
         self.running_process = None
         self.busy = False
 
     def _process_switch_event(self):
         """Process a round_robin style switch event"""
-        # TODO: IMPLEMENT
-        pass
+        logging.debug('%s: Processing switch event', self.current_time)
+        self.scheduler.put_process(self.running_process)
+        self.running_process = None
+        self.busy = False
 
     def bootstrap(self):
         """Bootstrap Event Queue"""
@@ -138,6 +143,7 @@ class Simulator:
 
             self.scheduler.check_running_process()
 
+        # TODO: Clean up
         tag = 'type' + str(self.scheduler.type) + '_burst' + \
               str(self.config['burst_lambda']) + '_rate' + \
               str(self.config['rate'])
