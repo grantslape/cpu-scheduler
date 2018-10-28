@@ -159,11 +159,11 @@ class Simulator:
 
             self.scheduler.check_running_process()
 
-        # TODO: Clean up and add quantum if needed
+        # TODO: Clean up
         tag = 'type' + str(self.scheduler.type) + '_burst' + \
               str(self.config['burst_lambda']) + '_rate' + \
-              str(self.config['rate'])
+              str(self.config['rate']) + '_q' + str(self.config['quantum'])
         path, filename = self.modeller.write_stats(self.done, tag)
         # self.modeller.plot(path, filename)
 
-        logging.info('Sim done!')
+        logging.info('{1}: Sim {0} done!'.format(tag, self.current_time))
