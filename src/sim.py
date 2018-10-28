@@ -1,6 +1,6 @@
 """Main Simulator"""
 import logging
-import os
+from pathlib import Path
 from queue import PriorityQueue, Queue
 from arrow import Arrow
 
@@ -60,15 +60,30 @@ class Simulator:
                                    method=method,
                                    quantum=self.config['quantum'])
 
-        path = 'data'
         timestamp = self.current_time.timestamp
-        os.mkdir(path + '/' + str(timestamp))
-        os.mkdir(path + '/' + str(timestamp) + '/' + Modeller.DATA_PATH)
-        os.mkdir(path + '/' + str(timestamp) + '/' + Modeller.PLOT_PATH)
+
+        path = 'data'
+        data_path = Path('{0}/{1}/{2}'.format(path, str(timestamp), Modeller.DATA_PATH))
+        if not data_path.exists():
+            data_path.mkdir(parents=True)
+        plot_path = Path('{0}/{1}/{2}'.format(path, str(timestamp), Modeller.PLOT_PATH))
+        if not plot_path.exists():
+            plot_path.mkdir(parents=True)
+
+        log_path = Path(str(data_path.parent) + '/logs')
+        if not log_path.exists():
+            log_path.mkdir()
+        specific_path = '/scheduler_{0}_{1}'.format(method, process_rate)
+        if method == Scheduler.Types['RR']:
+            specific_path += '_{}'.format(quantum)
+        specific_path += '.log'
+        log_path = Path(str(log_path) + specific_path)
+        log_path.touch()
+
         self.modeller = Modeller(path=path,
                                  created_at=timestamp)
 
-        logging.basicConfig(filename='logs/scheduler.log',
+        logging.basicConfig(filename=str(log_path),
                             level=log_level,
                             format='%(levelname)s - %(message)s')
 
@@ -113,15 +128,15 @@ class Simulator:
             activate_at = last_event_time.shift(
                 seconds=rand_exp_float(self.config['rate']))
 
-            p = Process(process_id=i + 1,
-                        run_time=rand_exp_float(self.config['burst_lambda']),
-                        created_at=activate_at)
+            process = Process(process_id=i + 1,
+                              run_time=rand_exp_float(self.config['burst_lambda']),
+                              created_at=activate_at)
 
             self.event_queue.put(
                 Event(created_at=activate_at,
                       event_type=Event.Types['NEW'],
-                      process=p))
-            logging.debug('Queued creation event for process: %s', p)
+                      process=process))
+            logging.debug('Queued creation event for process: %s', process)
 
             last_event_time = activate_at
 
@@ -143,10 +158,11 @@ class Simulator:
 
             self.scheduler.check_running_process()
 
-        # TODO: Clean up
+        # TODO: Clean up and add quantum if needed
         tag = 'type' + str(self.scheduler.type) + '_burst' + \
               str(self.config['burst_lambda']) + '_rate' + \
               str(self.config['rate'])
-        path, filename = self.modeller.write_stats(self.done, tag)
-        self.modeller.plot(path, filename)
+        # path, filename = self.modeller.write_stats(self.done, tag)
+        # self.modeller.plot(path, filename)
+
         logging.info('Sim done!')
