@@ -19,7 +19,7 @@ def main():
     parser.add_argument('runs', type=int, help='Number of trials')
     parser.add_argument('max_rate', type=int, help='max processes per second')
     parser.add_argument('seed', type=int, help='base seed for PRNG. base_seed + type + rate')
-    parser.add_argument('-v', '--verbose', action='store_true', help='set log level to debug')
+    parser.add_argument('-v', '--verbose', action='store_true', help='logs use a lot of disk space')
     args = parser.parse_args()
 
     level = logging.DEBUG if args.verbose else logging.WARNING

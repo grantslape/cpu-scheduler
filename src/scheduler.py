@@ -61,8 +61,6 @@ class Scheduler:
             self.parent.running_process = self.parent.process_queue.get()
         logging.debug("%s: starting process: %s", self.parent.current_time, self.parent.running_process)
         self.parent.busy = True
-        if not self.parent.running_process.start_at:
-            self.parent.running_process.start_at = self.parent.current_time
 
     def _fcfs_queue_process(self):
         """start a process with first come first served scheduling"""
@@ -119,7 +117,6 @@ class Scheduler:
                           event_type=Event.Types['COMPLETE'])
                 )
             else:
-                logging.debug('scheduling RR switch')
                 self.parent.event_queue.put(
                     Event(created_at=self.parent.current_time.shift(seconds=self.quantum),
                           event_type=Event.Types['SWITCH'])
