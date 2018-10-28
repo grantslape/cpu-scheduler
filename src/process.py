@@ -31,17 +31,17 @@ class Process:
         self.created_at = created_at
         self.start_at = None
         self.run_time = run_time
-        self.total_time = None
-        self.used = None
+        self.total_time = 0
+        self.used = 0
         self.completed_at = None
 
     def __lt__(self, other) -> bool:
         """Implement comparable"""
         priority = (self.created_at,
-                    self.run_time - (self.used or 0),
+                    self.run_time - self.used,
                     self.run_time)
         other_priority = (other.created_at,
-                          other.run_time - (other.used or 0),
+                          other.run_time - other.used,
                           other.run_time)
         return priority < other_priority
 

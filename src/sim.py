@@ -86,10 +86,7 @@ class Simulator:
         """Process a new process event"""
         p = event.process
         p.start_at = self.current_time
-        # TODO: need to insert (ranking, p) by different
-        # TODO: scheduling algorithm
-        logging.debug("Inserting process: %s", p)
-        self.process_queue.put(p)
+        self.scheduler.put_process(p)
 
     def _process_complete_event(self):
         """Process a completion event"""
@@ -133,6 +130,8 @@ class Simulator:
                 # Update usage time if CPU was busy in prev interval
                 diff = event.created_at - self.current_time
                 self.usage += diff.total_seconds()
+                self.running_process.set_used(start=self.current_time,
+                                              end=event.created_at)
 
             self.current_time = event.created_at
             self.process_event(event)
