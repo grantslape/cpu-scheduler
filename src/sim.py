@@ -82,7 +82,7 @@ class Simulator:
 
         self.modeller = Modeller(path=path,
                                  created_at=timestamp)
-
+        # TODO: Need to use a real logging config
         logging.basicConfig(filename=str(log_path),
                             level=log_level,
                             format='%(levelname)s - %(message)s')
@@ -162,7 +162,7 @@ class Simulator:
         tag = 'type' + str(self.scheduler.type) + '_burst' + \
               str(self.config['burst_lambda']) + '_rate' + \
               str(self.config['rate'])
-        # path, filename = self.modeller.write_stats(self.done, tag)
+        path, filename = self.modeller.write_stats(self.done, tag)
         # self.modeller.plot(path, filename)
 
         logging.info('Sim done!')

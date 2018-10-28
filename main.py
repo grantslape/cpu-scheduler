@@ -6,6 +6,7 @@ CPU Scheduler Simulator
 import logging
 import argparse
 import numpy as np
+import concurrent.futures
 from arrow import utcnow, Arrow
 
 from src.sim import Simulator
@@ -26,28 +27,29 @@ def main():
     length = args.runs
     rates = [i + 1 for i in range(args.max_rate)]
 
-    for key, value in Scheduler.Types.items():
-        kwargs = {
-            'method': value,
-            'prefix': prefix,
-            'level': level,
-            'quantum': 0.01,
-            'rate': None,
-            'length': length
-        }
+    with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
+        for key, value in Scheduler.Types.items():
+            kwargs = {
+                'method': value,
+                'prefix': prefix,
+                'level': level,
+                'quantum': 0.01,
+                'rate': None,
+                'length': length
+            }
 
-        for rate in rates:
-            # concat base_seed
-            np.random.seed(int(str(args.seed) + str(value) + str(rate)))
-            kwargs['rate'] = rate
-            run_sim(**kwargs)
-
-        if key == 'RR':
-            kwargs['quantum'] = 0.2
             for rate in rates:
+                # concat base_seed
                 np.random.seed(int(str(args.seed) + str(value) + str(rate)))
                 kwargs['rate'] = rate
-                run_sim(**kwargs)
+                executor.submit(run_sim, **kwargs)
+
+            if key == 'RR':
+                kwargs['quantum'] = 0.2
+                for rate in rates:
+                    np.random.seed(int(str(args.seed) + str(value) + str(rate)))
+                    kwargs['rate'] = rate
+                    executor.submit(run_sim, **kwargs)
 
 
 def run_sim(method: int, prefix: Arrow, level: int, rate: int, length: int, quantum: float = None):
