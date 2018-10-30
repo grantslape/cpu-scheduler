@@ -85,9 +85,11 @@ class Simulator:
         if not log_path.exists():
             log_path.touch()
 
-        logging.basicConfig(filename=str(log_path),
-                            level=log_level,
-                            format='%(threadName)s: %(levelname)s - %(message)s')
+        logging.basicConfig(
+            filename=str(log_path),
+            level=log_level,
+            format='%(threadName)s: %(levelname)s - %(message)s'
+        )
 
     def process_event(self, event: Event):
         """Switch to process events"""
@@ -184,13 +186,20 @@ class Simulator:
         :param tag: unique tag to apply to csv
         :return: path to created file
         """
-        # TODO: Write high level stats
-        modeller = Modeller(
-            path='data',
-            created_at=self.created_at.timestamp
-        )
+        modeller = Modeller(path='data')
         logging.info('%s: Writing run stats', self.current_time)
-        return modeller.write_stats(self.done, tag)
+        kwargs = {
+            'in_list': self.done,
+            'path': tag,
+            'created_at': self.created_at.timestamp,
+            'length': self.config['length'],
+            'usage': self.usage,
+            'total_time': (self.current_time - self.created_at).total_seconds(),
+            'given_lambda': self.config['rate']
+        }
+        modeller.write_stats(**kwargs)
+
+        return Path()
 
 
 if __name__ == '__main__':

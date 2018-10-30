@@ -23,9 +23,8 @@ class Modeller:
     DATA_PATH = 'raw_data'
     PLOT_PATH = 'plots'
 
-    def __init__(self, created_at: int, path: str = ABS_PATH):
+    def __init__(self, path: str = ABS_PATH):
         self.abs_path = path
-        self.created_at = created_at
 
     @staticmethod
     def get_data_path(identifier: str) -> Path:
@@ -37,22 +36,30 @@ class Modeller:
         """Get plot path given identifier"""
         return Path('{0}/{1}/{2}'.format(Modeller.ABS_PATH, identifier, Modeller.PLOT_PATH))
 
-    def write_stats(self, in_list: [Process], path: str) -> Path:
+    def write_stats(self, in_list: [Process], path: str, **kwargs) -> Path:
         """
         Write raw process run statistics
         :param in_list: list of processes to be written
         :param path: str: tag name of run to be written
         :return: Path:
         """
-        members = (self.abs_path, self.created_at, Modeller.DATA_PATH, path)
-        identifier = Path("{0}/{1}/{2}/{3}.csv".format(*members))
+        timestamp = kwargs.get('created_at')
+        members = (self.abs_path, timestamp, Modeller.DATA_PATH, path)
+        identifier = "{0}/{1}/{2}/{3}".format(*members)
+        identifier += '.csv'
+        data_path = Path(identifier)
 
-        with open(str(identifier), 'w', newline='') as file:
+        with open(str(data_path), 'w', newline='') as file:
+            kwargs['turnaround_time'] = 0
+            kwargs['wait_time'] = 0
             writer = csv.writer(file, delimiter=',')
             # Write CSV Headers
             writer.writerow(vars(in_list[0]))
             # Write row for each process
             for p in in_list:
+                kwargs['turnaround_time'] += p.total_time
+                kwargs['wait_time'] += p.total_time - p.used
+
                 csv_output = (
                     p.id,
                     p.created_at,
@@ -64,12 +71,47 @@ class Modeller:
                 )
                 writer.writerow(csv_output)
 
-        if not identifier.exists():
+            row = self.calc_high_level_stats(**kwargs)
+            with open('high_' + identifier + '.csv', 'w', newline='') as high:
+                writer = csv.writer(high)
+                writer.writerow(['turnaround_time', 'throughput', 'utilization', 'avg_process_count'])
+                writer.writerow(row)
+
+        if not data_path.exists():
             message = 'Bad stats path: {}'.format(str(identifier))
             logging.critical(message)
             raise Exception(message)
 
-        return identifier
+        return data_path
+
+    def calc_high_level_stats(self,
+                              turnaround_time: float,
+                              wait_time: float,
+                              length: int,
+                              usage: float,
+                              total_time: float,
+                              given_lambda : int,
+                              **kwargs):
+        """
+        Write high level stats
+        # 1) AVERAGE TURNAROUND TIME
+        # 2) TOTAL THROUGHPUT
+        # 3) CPU UTILIZATION
+        # 4) AVERAGE # OF PROCESSES IN READY QUEUE (SEE EMAIL)
+        :param turnaround_time:
+        :param wait_time:
+        :param length:
+        :param usage:
+        :param total_time:
+        :param given_lambda:
+        :return:
+        """
+        utilization = usage / total_time
+        throughput = length / total_time
+        return (turnaround_time / length,
+                throughput,
+                utilization,
+                given_lambda * wait_time)
 
     def plot(self, path: str, name: str):
         """

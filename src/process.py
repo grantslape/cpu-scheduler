@@ -67,7 +67,7 @@ class Process:
         :return: total_time: seconds
         """
         self.completed_at = completed_at
-        self.total_time = (self.completed_at - self.start_at).total_seconds()
+        self.total_time = (self.completed_at - self.created_at).total_seconds()
         return self.total_time
 
     def set_used(self, start: Arrow, end: Arrow) -> float:

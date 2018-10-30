@@ -60,7 +60,7 @@ def main():
 
 def generate_plots():
     """
-    TODO: Implement
+    TODO: Implement.  Glob for high pattern in data directory
     :return:
     """
     pass
