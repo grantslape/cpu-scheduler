@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from os import rename
 
 from src.process import Process
+from src.commons.commons import calc_high_level_stats
 
 
 class Modeller:
@@ -71,10 +72,11 @@ class Modeller:
                 )
                 writer.writerow(csv_output)
 
-            row = self.calc_high_level_stats(**kwargs)
-            with open('high_' + identifier + '.csv', 'w', newline='') as high:
+            row = calc_high_level_stats(**kwargs)
+            # TODO: fix file path
+            with open(identifier + '.csv', 'w', newline='') as high:
                 writer = csv.writer(high)
-                writer.writerow(['turnaround_time', 'throughput', 'utilization', 'avg_process_count'])
+                writer.writerow(('turnaround_time', 'throughput', 'utilization', 'avg_process_count'))
                 writer.writerow(row)
 
         if not data_path.exists():
@@ -83,35 +85,6 @@ class Modeller:
             raise Exception(message)
 
         return data_path
-
-    def calc_high_level_stats(self,
-                              turnaround_time: float,
-                              wait_time: float,
-                              length: int,
-                              usage: float,
-                              total_time: float,
-                              given_lambda : int,
-                              **kwargs):
-        """
-        Write high level stats
-        # 1) AVERAGE TURNAROUND TIME
-        # 2) TOTAL THROUGHPUT
-        # 3) CPU UTILIZATION
-        # 4) AVERAGE # OF PROCESSES IN READY QUEUE (SEE EMAIL)
-        :param turnaround_time:
-        :param wait_time:
-        :param length:
-        :param usage:
-        :param total_time:
-        :param given_lambda:
-        :return:
-        """
-        utilization = usage / total_time
-        throughput = length / total_time
-        return (turnaround_time / length,
-                throughput,
-                utilization,
-                given_lambda * wait_time)
 
     def plot(self, path: str, name: str):
         """

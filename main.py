@@ -61,6 +61,7 @@ def main():
 def generate_plots():
     """
     TODO: Implement.  Glob for high pattern in data directory
+    then generate dataframes from individual columns with burst lambda
     :return:
     """
     pass
