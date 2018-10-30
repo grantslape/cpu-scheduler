@@ -29,7 +29,7 @@ class Scheduler:
         self.parent = parent
         self.type = method
         self.quantum = quantum
-        
+
     def check_running_process(self):
         """Check running process and adjust appropriately"""
         if self.type == self.Types['FCFS']:

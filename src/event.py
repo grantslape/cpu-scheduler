@@ -7,7 +7,7 @@ from src.process import Process
 class Event:
     """
     Basic Event class
-    TODO: Document attributes
+    TODO: Possible replace with named tuple
     """
     Types = {
         'NEW': 1,

@@ -5,8 +5,8 @@ CPU Scheduler Simulator
 """
 import logging
 import argparse
-import numpy as np
 import concurrent.futures
+import numpy as np
 from arrow import utcnow, Arrow
 
 from src.sim import Simulator
@@ -59,7 +59,10 @@ def main():
 
 
 def generate_plots():
-    # TODO: Implement
+    """
+    TODO: Implement
+    :return:
+    """
     pass
 
 

@@ -62,6 +62,12 @@ class Simulator:
 
     @staticmethod
     def create_logger(log_level: int, tag: str):
+        """
+        !! CALL ONCE PER GROUP OF SIMULATIONS !!
+        Static method to create logger and data directories
+        :param log_level: level to set global logger
+        :param tag: Sim grouping tag (unix timestamps)
+        """
         # Create data directories for this run (and any others in the set)
         data_path = Modeller.get_data_path(tag)
         if not data_path.exists():
@@ -173,6 +179,11 @@ class Simulator:
         return self.offload(tag)
 
     def offload(self, tag: str) -> Path:
+        """
+        Offload Sim resources and write stats
+        :param tag: unique tag to apply to csv
+        :return: path to created file
+        """
         # TODO: Write high level stats
         modeller = Modeller(
             path='data',
