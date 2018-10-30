@@ -1,6 +1,4 @@
 """Process"""
-import json
-
 from arrow import Arrow
 
 

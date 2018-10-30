@@ -16,4 +16,4 @@ source env/bin/activate
 echo "installing requirements"
 pip install -r requirements.txt
 echo "Running simulation with default configuration"
-python main.py
+python main.py 1000 5 1234

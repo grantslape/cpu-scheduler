@@ -17,7 +17,7 @@ class Scheduler:
         parent: reference to the parent simulator
         method: type of scheduling algorithm to use as enumerated in
             Scheduler.Types
-
+        quantum:
     """
     Types = {
         'FCFS': 1,

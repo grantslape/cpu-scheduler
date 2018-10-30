@@ -22,17 +22,19 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true', help='logs use a lot of disk space')
     args = parser.parse_args()
 
-    level = logging.DEBUG if args.verbose else logging.WARNING
+    level = logging.DEBUG if args.verbose else logging.INFO
     prefix = utcnow()
     length = args.runs
     rates = [i + 1 for i in range(args.max_rate)]
+    results = []
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    Simulator.create_logger(log_level=level, tag=str(prefix.timestamp))
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(rates) * 4) as executor:
         for key, value in Scheduler.Types.items():
             kwargs = {
                 'method': value,
                 'prefix': prefix,
-                'level': level,
                 'quantum': 0.01,
                 'rate': None,
                 'length': length
@@ -42,21 +44,38 @@ def main():
                 # concat base_seed
                 np.random.seed(int(str(args.seed) + str(value) + str(rate)))
                 kwargs['rate'] = rate
-                executor.submit(run_sim, **kwargs)
+                results.append(executor.submit(run_sim, **kwargs))
 
             if key == 'RR':
                 kwargs['quantum'] = 0.2
                 for rate in rates:
                     np.random.seed(int(str(args.seed) + str(value) + str(rate)))
                     kwargs['rate'] = rate
-                    executor.submit(run_sim, **kwargs)
+                    results.append(executor.submit(run_sim, **kwargs))
+
+    for result in results:
+        logging.debug(result.result())
+    generate_plots()
 
 
-def run_sim(method: int, prefix: Arrow, level: int, rate: int, length: int, quantum: float = None):
-    """run sim with given parameters"""
+def generate_plots():
+    # TODO: Implement
+    pass
+
+
+def run_sim(method: int, prefix: Arrow, rate: int, length: int, quantum: float = None):
+    """
+    run sim with given parameters
+    :param method:
+    :param prefix:
+    :param level:
+    :param rate:
+    :param length:
+    :param quantum:
+    :return:
+    """
     Simulator(
         method=method,
-        log_level=level,
         created_at=prefix,
         quantum=quantum,
         process_rate=rate,

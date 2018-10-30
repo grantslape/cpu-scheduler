@@ -39,12 +39,12 @@ class Simulator:
                  burst_lambda: float = 0.06,
                  process_rate: int = 1,
                  method: int = 1,
-                 log_level: int = logging.WARNING,
                  quantum: float = None):
         self.event_queue = PriorityQueue()
         self.process_queue = PriorityQueue() if method != Scheduler.Types['RR'] else Queue()
         self.done = []
         self.current_time = created_at
+        self.created_at = created_at
         self.busy = False
         self.usage = 0
         self.running_process = None
@@ -60,30 +60,25 @@ class Simulator:
                                    method=method,
                                    quantum=self.config['quantum'])
 
-        timestamp = self.current_time.timestamp
-
-        path = 'data'
-        data_path = Path('{0}/{1}/{2}'.format(path, str(timestamp), Modeller.DATA_PATH))
+    @staticmethod
+    def create_logger(log_level: int, tag: str):
+        # Create data directories for this run (and any others in the set)
+        data_path = Modeller.get_data_path(tag)
         if not data_path.exists():
             data_path.mkdir(parents=True)
-        plot_path = Path('{0}/{1}/{2}'.format(path, str(timestamp), Modeller.PLOT_PATH))
+        plot_path = Modeller.get_plot_path(tag)
         if not plot_path.exists():
             plot_path.mkdir(parents=True)
 
         log_path = Path(str(data_path.parent) + '/logs')
         if not log_path.exists():
             log_path.mkdir()
-        # specific_path = '/scheduler_{0}_{1}'.format(method, process_rate)
-        # if method == Scheduler.Types['RR']:
-        #     specific_path += '_{}'.format(quantum)
         specific_path = '/scheduler'
         specific_path += '.log'
         log_path = Path(str(log_path) + specific_path)
         if not log_path.exists():
             log_path.touch()
 
-        self.modeller = Modeller(path=path,
-                                 created_at=timestamp)
         logging.basicConfig(filename=str(log_path),
                             level=log_level,
                             format='%(threadName)s: %(levelname)s - %(message)s')
@@ -129,41 +124,64 @@ class Simulator:
             activate_at = last_event_time.shift(
                 seconds=rand_exp_float(self.config['rate']))
 
-            process = Process(process_id=i + 1,
-                              run_time=rand_exp_float(self.config['burst_lambda']),
-                              created_at=activate_at)
+            process = Process(
+                process_id=i + 1,
+                run_time=rand_exp_float(self.config['burst_lambda']),
+                created_at=activate_at
+            )
 
             self.event_queue.put(
-                Event(created_at=activate_at,
-                      event_type=Event.Types['NEW'],
-                      process=process))
+                Event(
+                    created_at=activate_at,
+                    event_type=Event.Types['NEW'],
+                    process=process
+                )
+            )
             logging.debug('Queued creation event for process: %s', process)
-
             last_event_time = activate_at
 
     def run(self):
         """Run the whole simulation"""
+        logging.info('%s: Bootstrapping event queue', self.current_time)
         self.bootstrap()
 
+        logging.info('%s: Beginning main event loop', self.current_time)
         while not self.event_queue.empty():
             event = self.event_queue.get()
             if self.busy:
                 # Update usage time if CPU was busy in prev interval
                 diff = event.created_at - self.current_time
                 self.usage += diff.total_seconds()
-                self.running_process.set_used(start=self.current_time,
-                                              end=event.created_at)
-
+                self.running_process.set_used(
+                    start=self.current_time,
+                    end=event.created_at
+                )
             self.current_time = event.created_at
             self.process_event(event)
-
             self.scheduler.check_running_process()
 
-        # TODO: Clean up
-        tag = 'type' + str(self.scheduler.type) + '_burst' + \
-              str(self.config['burst_lambda']) + '_rate' + \
-              str(self.config['rate']) + '_q' + str(self.config['quantum'])
-        path, filename = self.modeller.write_stats(self.done, tag)
-        # self.modeller.plot(path, filename)
+        members = (
+            self.scheduler.type,
+            self.config['burst_lambda'],
+            self.config['rate'],
+            self.config['quantum']
+        )
+        tag = 'type{0}_burst{1}_rate{2}_quantum{3}'.format(*members)
 
-        logging.info('{1}: Sim {0} done!'.format(tag, self.current_time))
+        logging.info('%s: Sim %s offloading!', self.current_time, tag)
+
+        return self.offload(tag)
+
+    def offload(self, tag: str) -> Path:
+        # TODO: Write high level stats
+        modeller = Modeller(
+            path='data',
+            created_at=self.created_at.timestamp
+        )
+        logging.info('%s: Writing run stats', self.current_time)
+        return modeller.write_stats(self.done, tag)
+
+
+if __name__ == '__main__':
+    # TODO: submission instructions
+    pass
