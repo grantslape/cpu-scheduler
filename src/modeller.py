@@ -72,7 +72,6 @@ class Modeller:
                 writer.writerow(csv_output)
 
             row = calc_high_level_stats(**kwargs)
-            # TODO: fix file path
             with open('{}/high_{}.csv'.format(self.get_data_path(timestamp), path), 'w', newline='') as high:
                 writer = csv.writer(high)
                 writer.writerow(('turnaround_time', 'throughput', 'utilization', 'avg_process_count'))
