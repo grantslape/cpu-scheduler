@@ -26,11 +26,14 @@ def main():
     prefix = utcnow()
     length = args.runs
     rates = [i + 1 for i in range(args.max_rate)]
+    # TODO: See about using np.array here.
     results = []
 
     Simulator.create_logger(log_level=level, tag=str(prefix.timestamp))
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(rates) * 4) as executor:
+    start = utcnow()
+
+    with concurrent.futures.ProcessPoolExecutor() as executor:
         for key, value in Scheduler.Types.items():
             kwargs = {
                 'method': value,
@@ -56,6 +59,8 @@ def main():
     for result in results:
         logging.debug(result.result())
     generate_plots()
+
+    print("Sim done, execution time: {}".format((utcnow() - start).total_seconds()))
 
 
 def generate_plots():

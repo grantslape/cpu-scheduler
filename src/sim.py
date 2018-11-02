@@ -42,6 +42,7 @@ class Simulator:
                  quantum: float = None):
         self.event_queue = PriorityQueue()
         self.process_queue = PriorityQueue() if method != Scheduler.Types['RR'] else Queue()
+        # TODO: See about using np.array here.
         self.done = []
         self.current_time = created_at
         self.created_at = created_at
@@ -76,12 +77,11 @@ class Simulator:
         if not plot_path.exists():
             plot_path.mkdir(parents=True)
 
-        log_path = Path(str(data_path.parent) + '/logs')
+        log_path = Path('{0}{1}'.format(str(data_path.parent), '/logs'))
         if not log_path.exists():
             log_path.mkdir()
-        specific_path = '/scheduler'
-        specific_path += '.log'
-        log_path = Path(str(log_path) + specific_path)
+        specific_path = '/scheduler.log'
+        log_path = Path('{0}{1}'.format(str(log_path), specific_path))
         if not log_path.exists():
             log_path.touch()
 

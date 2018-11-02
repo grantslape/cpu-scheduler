@@ -46,8 +46,7 @@ class Modeller:
         """
         timestamp = kwargs.get('created_at')
         members = (self.abs_path, timestamp, Modeller.DATA_PATH, path)
-        identifier = "{0}/{1}/{2}/{3}".format(*members)
-        identifier += '.csv'
+        identifier = "{0}/{1}/{2}/{3}.csv".format(*members)
         data_path = Path(identifier)
 
         with open(str(data_path), 'w', newline='') as file:
@@ -74,7 +73,7 @@ class Modeller:
 
             row = calc_high_level_stats(**kwargs)
             # TODO: fix file path
-            with open(identifier + '.csv', 'w', newline='') as high:
+            with open('{}/high_{}.csv'.format(self.get_data_path(timestamp), path), 'w', newline='') as high:
                 writer = csv.writer(high)
                 writer.writerow(('turnaround_time', 'throughput', 'utilization', 'avg_process_count'))
                 writer.writerow(row)
