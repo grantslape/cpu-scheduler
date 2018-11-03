@@ -5,7 +5,7 @@ from queue import PriorityQueue, Queue
 from arrow import Arrow
 
 from src.event import Event
-from src.commons.commons import rand_exp_float
+from src.commons.commons import rand_exp_float, SCHEDULE_TYPES, EVENT_TYPES
 from src.modeller import Modeller
 from src.process import Process
 from src.scheduler import Scheduler
@@ -32,7 +32,6 @@ class Simulator:
         created_at: used as file tag
     """
     # pylint: disable=too-many-instance-attributes
-
     def __init__(self,
                  created_at: Arrow,
                  length: int = 100,
@@ -41,12 +40,10 @@ class Simulator:
                  method: int = 1,
                  quantum: float = None):
         self.event_queue = PriorityQueue()
-        self.process_queue = PriorityQueue() if method != Scheduler.Types['RR'] else Queue()
-        # TODO: See about using np.array here.
+        self.process_queue = PriorityQueue() if method != SCHEDULE_TYPES['RR'] else Queue()
         self.done = []
         self.current_time = created_at
         self.created_at = created_at
-        self.busy = False
         self.usage = 0
         self.running_process = None
 
@@ -61,43 +58,13 @@ class Simulator:
                                    method=method,
                                    quantum=self.config['quantum'])
 
-    @staticmethod
-    def create_logger(log_level: int, tag: str):
-        """
-        !! CALL ONCE PER GROUP OF SIMULATIONS !!
-        Static method to create logger and data directories
-        :param log_level: level to set global logger
-        :param tag: Sim grouping tag (unix timestamps)
-        """
-        # Create data directories for this run (and any others in the set)
-        data_path = Modeller.get_data_path(tag)
-        if not data_path.exists():
-            data_path.mkdir(parents=True)
-        plot_path = Modeller.get_plot_path(tag)
-        if not plot_path.exists():
-            plot_path.mkdir(parents=True)
-
-        log_path = Path('{0}{1}'.format(str(data_path.parent), '/logs'))
-        if not log_path.exists():
-            log_path.mkdir()
-        specific_path = '/scheduler.log'
-        log_path = Path('{0}{1}'.format(str(log_path), specific_path))
-        if not log_path.exists():
-            log_path.touch()
-
-        logging.basicConfig(
-            filename=str(log_path),
-            level=log_level,
-            format='%(threadName)s: %(levelname)s - %(message)s'
-        )
-
     def process_event(self, event: Event):
         """Switch to process events"""
-        if event.event_type == Event.Types['NEW']:
+        if event.event_type == EVENT_TYPES['NEW']:
             self._process_new_event(event)
-        elif event.event_type == Event.Types['COMPLETE']:
+        elif event.event_type == EVENT_TYPES['COMPLETE']:
             self._process_complete_event()
-        elif event.event_type == Event.Types['SWITCH']:
+        elif event.event_type == EVENT_TYPES['SWITCH']:
             self._process_switch_event()
         else:
             message = "Unknown event, terminating: {}".format(str(event))
@@ -116,14 +83,12 @@ class Simulator:
         self.done.append(self.running_process)
         logging.debug("%s: Finishing process: %s", self.current_time, self.running_process)
         self.running_process = None
-        self.busy = False
 
     def _process_switch_event(self):
         """Process a round_robin style switch event"""
         logging.debug('%s: Processing switch event', self.current_time)
         self.scheduler.put_process(self.running_process)
         self.running_process = None
-        self.busy = False
 
     def bootstrap(self):
         """Bootstrap Event Queue"""
@@ -141,7 +106,7 @@ class Simulator:
             self.event_queue.put(
                 Event(
                     created_at=activate_at,
-                    event_type=Event.Types['NEW'],
+                    event_type=EVENT_TYPES['NEW'],
                     process=process
                 )
             )
@@ -156,7 +121,7 @@ class Simulator:
         logging.info('%s: Beginning main event loop', self.current_time)
         while not self.event_queue.empty():
             event = self.event_queue.get()
-            if self.busy:
+            if self.running_process:
                 # Update usage time if CPU was busy in prev interval
                 diff = event.created_at - self.current_time
                 self.usage += diff.total_seconds()

@@ -6,11 +6,44 @@ CPU Scheduler Simulator
 import logging
 import argparse
 import concurrent.futures
+from pathlib import Path
+
 import numpy as np
 from arrow import utcnow, Arrow
 
+from src.modeller import Modeller
 from src.sim import Simulator
-from src.scheduler import Scheduler
+from src.commons.commons import SCHEDULE_TYPES
+
+
+def create_logger(log_level: int, tag: str):
+    """
+    !! CALL ONCE PER GROUP OF SIMULATIONS !!
+    Static method to create logger and data directories
+    :param log_level: level to set global logger
+    :param tag: Sim grouping tag (unix timestamps)
+    """
+    # Create data directories for this run (and any others in the set)
+    data_path = Modeller.get_data_path(tag)
+    if not data_path.exists():
+        data_path.mkdir(parents=True)
+    plot_path = Modeller.get_plot_path(tag)
+    if not plot_path.exists():
+        plot_path.mkdir(parents=True)
+
+    log_path = Path('{0}{1}'.format(str(data_path.parent), '/logs'))
+    if not log_path.exists():
+        log_path.mkdir()
+    specific_path = '/scheduler.log'
+    log_path = Path('{0}{1}'.format(str(log_path), specific_path))
+    if not log_path.exists():
+        log_path.touch()
+
+    logging.basicConfig(
+        filename=str(log_path),
+        level=log_level,
+        format='%(threadName)s: %(levelname)s - %(message)s'
+    )
 
 
 def main():
@@ -29,12 +62,12 @@ def main():
     # TODO: See about using np.array here.
     results = []
 
-    Simulator.create_logger(log_level=level, tag=str(prefix.timestamp))
+    create_logger(log_level=level, tag=str(prefix.timestamp))
 
     start = utcnow()
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        for key, value in Scheduler.Types.items():
+        for key, value in SCHEDULE_TYPES.items():
             kwargs = {
                 'method': value,
                 'prefix': prefix,

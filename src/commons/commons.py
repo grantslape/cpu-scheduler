@@ -1,6 +1,18 @@
 """Helper Functions"""
 import numpy as np
 
+SCHEDULE_TYPES = {
+    'FCFS': 1,
+    'SJF': 2,
+    'RR': 3
+}
+
+EVENT_TYPES = {
+    'NEW': 1,
+    'COMPLETE': 2,
+    'SWITCH': 3
+}
+
 
 def rand_exp_float(given_lambda: float) -> float:
     """
@@ -12,13 +24,14 @@ def rand_exp_float(given_lambda: float) -> float:
         given_lambda = 1/given_lambda
     return np.random.exponential(scale=given_lambda)
 
+def generate_event()
 
 def calc_high_level_stats(turnaround_time: float,
                           wait_time: float,
                           length: int,
                           usage: float,
                           total_time: float,
-                          given_lambda : int,
+                          given_lambda: int,
                           **kwargs):
     """
     Write high level stats

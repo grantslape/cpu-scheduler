@@ -4,6 +4,7 @@ from queue import PriorityQueue
 
 from src.event import Event
 from src.process import Process
+from src.commons.commons import SCHEDULE_TYPES, EVENT_TYPES
 
 
 class Scheduler:
@@ -16,15 +17,9 @@ class Scheduler:
     Attributes:
         parent: reference to the parent simulator
         method: type of scheduling algorithm to use as enumerated in
-            Scheduler.Types
-        quantum:
+            commons.SCHEDULE_TYPES
+        quantum: Time quantum to preempt and switch to next process if applicable
     """
-    Types = {
-        'FCFS': 1,
-        'SJF': 2,
-        'RR': 3
-    }
-
     def __init__(self, parent, method: int, quantum: float = None):
         self.parent = parent
         self.type = method
@@ -32,11 +27,11 @@ class Scheduler:
 
     def check_running_process(self):
         """Check running process and adjust appropriately"""
-        if self.type == self.Types['FCFS']:
+        if self.type == SCHEDULE_TYPES['FCFS']:
             self._fcfs_queue_process()
-        elif self.type == self.Types['SJF']:
+        elif self.type == SCHEDULE_TYPES['SJF']:
             self._sjf_queue_process()
-        elif self.type == self.Types['RR']:
+        elif self.type == SCHEDULE_TYPES['RR']:
             self._rr_queue_process()
         else:
             message = "Unknown schedule type: {}".format(self.type)
@@ -46,11 +41,11 @@ class Scheduler:
     def put_process(self, process: Process):
         """Insert a process into the queue"""
         logging.debug("%s: Inserting process: %s", self.parent.current_time, process)
-        if self.type == self.Types['FCFS']:
+        if self.type == SCHEDULE_TYPES['FCFS']:
             self.parent.process_queue.put((process.created_at, process))
-        elif self.type == self.Types['SJF']:
+        elif self.type == SCHEDULE_TYPES['SJF']:
             self.parent.process_queue.put((process.run_time - process.used, process))
-        elif self.type == self.Types['RR']:
+        elif self.type == SCHEDULE_TYPES['RR']:
             self.parent.process_queue.put(process)
 
     def _start_process(self):
@@ -60,17 +55,16 @@ class Scheduler:
         else:
             self.parent.running_process = self.parent.process_queue.get()
         logging.debug("%s: starting process: %s", self.parent.current_time, self.parent.running_process)
-        self.parent.busy = True
 
     def _fcfs_queue_process(self):
         """start a process with first come first served scheduling"""
-        if not self.parent.busy and not self.parent.process_queue.empty():
+        if not self.parent.running_process and not self.parent.process_queue.empty():
             self._start_process()
             # Queue completion event
             create = self.parent.current_time.shift(seconds=self.parent.running_process.run_time)
             self.parent.event_queue.put(
                 Event(created_at=create,
-                      event_type=Event.Types['COMPLETE'])
+                      event_type=EVENT_TYPES['COMPLETE'])
             )
 
     def _sjf_insert_process(self, process: Process):
@@ -81,7 +75,7 @@ class Scheduler:
         """start a process with shortest job first scheduling"""
         if not self.parent.process_queue.empty():
             # Do we need to preempt a process?
-            if self.parent.busy:
+            if self.parent.running_process:
                 process = self.parent.running_process
                 remain = process.get_remaining()
                 next_process = self.parent.process_queue.queue[0][1]
@@ -93,7 +87,7 @@ class Scheduler:
                 self._start_process()
 
         # Check if we need to queue a completion event
-        if self.parent.busy:
+        if self.parent.running_process:
             remain = self.parent.running_process.get_remaining()
             estimate = self.parent.current_time.shift(seconds=remain)
             if not self.parent.event_queue.empty():
@@ -103,21 +97,21 @@ class Scheduler:
 
             self.parent.event_queue.put(
                 Event(created_at=estimate,
-                      event_type=Event.Types['COMPLETE'])
+                      event_type=EVENT_TYPES['COMPLETE'])
             )
 
     def _rr_queue_process(self):
         """start a process with round robin scheduling"""
-        if not self.parent.busy and not self.parent.process_queue.empty():
+        if not self.parent.running_process and not self.parent.process_queue.empty():
             self._start_process()
             if self.parent.running_process.get_remaining() < self.quantum:
                 logging.debug('scheduling RR completion: %s', self.parent.running_process)
                 self.parent.event_queue.put(
                     Event(created_at=self.parent.current_time.shift(seconds=self.parent.running_process.get_remaining()),
-                          event_type=Event.Types['COMPLETE'])
+                          event_type=EVENT_TYPES['COMPLETE'])
                 )
             else:
                 self.parent.event_queue.put(
                     Event(created_at=self.parent.current_time.shift(seconds=self.quantum),
-                          event_type=Event.Types['SWITCH'])
+                          event_type=EVENT_TYPES['SWITCH'])
                 )

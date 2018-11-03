@@ -9,12 +9,6 @@ class Event:
     Basic Event class
     TODO: Possible replace with named tuple
     """
-    Types = {
-        'NEW': 1,
-        'COMPLETE': 2,
-        'SWITCH': 3
-    }
-
     def __init__(self,
                  created_at: Arrow = utcnow(),
                  event_type: int = None,
