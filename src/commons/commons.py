@@ -24,7 +24,6 @@ def rand_exp_float(given_lambda: float) -> float:
         given_lambda = 1/given_lambda
     return np.random.exponential(scale=given_lambda)
 
-def generate_event()
 
 def calc_high_level_stats(turnaround_time: float,
                           wait_time: float,

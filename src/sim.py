@@ -24,11 +24,10 @@ class Simulator:
         process_queue: Priority Queue of processed to be executed
         done: list of completed processes
         current_time: the current system time
-        busy: If the CPU is being used or not TODO: Replace this with interpreting running_process?
         usage: total CPU usage time in milliseconds
         length: number of trials to run
-        burst_lambda:
-        running_process:
+        burst_lambda: average process execution time
+        running_process: currently running process
         created_at: used as file tag
     """
     # pylint: disable=too-many-instance-attributes
@@ -59,7 +58,10 @@ class Simulator:
                                    quantum=self.config['quantum'])
 
     def process_event(self, event: Event):
-        """Switch to process events"""
+        """
+        Switch to process events
+        :param event: Event to be processed
+        """
         if event.event_type == EVENT_TYPES['NEW']:
             self._process_new_event(event)
         elif event.event_type == EVENT_TYPES['COMPLETE']:
@@ -72,7 +74,10 @@ class Simulator:
             raise Exception(message)
 
     def _process_new_event(self, event: Event):
-        """Process a new process event"""
+        """
+        Process a new process event
+        :param event: Event to be processed
+        """
         p = event.process
         p.start_at = self.current_time
         self.scheduler.put_process(p)
@@ -165,8 +170,3 @@ class Simulator:
         modeller.write_stats(**kwargs)
 
         return Path()
-
-
-if __name__ == '__main__':
-    # TODO: submission instructions
-    pass

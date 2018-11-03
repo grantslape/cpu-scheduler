@@ -49,6 +49,7 @@ class Scheduler:
             self.parent.process_queue.put(process)
 
     def _start_process(self):
+        """Start the next process from the queue"""
         # Hack to support simple queues.
         if isinstance(self.parent.process_queue, PriorityQueue):
             self.parent.running_process = self.parent.process_queue.get()[1]

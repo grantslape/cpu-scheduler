@@ -42,7 +42,7 @@ class Modeller:
         Write raw process run statistics
         :param in_list: list of processes to be written
         :param path: str: tag name of run to be written
-        :return: Path:
+        :return: data_path: base Path to stats folder
         """
         timestamp = kwargs.get('created_at')
         members = (self.abs_path, timestamp, Modeller.DATA_PATH, path)
