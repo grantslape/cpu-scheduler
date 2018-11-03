@@ -31,7 +31,6 @@ class Simulator:
         running_process: currently running process
         created_at: used as file tag
     """
-    # pylint: disable=too-many-instance-attributes
     def __init__(self,
                  created_at: Arrow,
                  length: int = 100,
@@ -39,13 +38,9 @@ class Simulator:
                  process_rate: int = 1,
                  method: int = 1,
                  quantum: float = None):
-        self.event_queue = PriorityQueue()
-        self.process_queue = PriorityQueue() if method != SCHEDULE_TYPES['RR'] else Queue()
-        self.done = []
         self.current_time = created_at
         self.created_at = created_at
         self.usage = 0
-        self.running_process = None
 
         self.config = {
             'length': length,
@@ -54,47 +49,17 @@ class Simulator:
             'quantum': quantum
         }
 
-        self.scheduler = Scheduler(parent=self,
-                                   method=method,
-                                   quantum=self.config['quantum'])
+        self.scheduler = Scheduler(method=method,
+                                   quantum=self.config['quantum'],
+                                   current_time=self.current_time)
 
-    def process_event(self, event: Event):
+    def update_current_time(self, new_time: Arrow):
         """
-        Switch to process events
-        :param event: Event to be processed
+        Update system time
+        :param new_time:
         """
-        if event.event_type == EVENT_TYPES['NEW']:
-            self._process_new_event(event)
-        elif event.event_type == EVENT_TYPES['COMPLETE']:
-            self._process_complete_event()
-        elif event.event_type == EVENT_TYPES['SWITCH']:
-            self._process_switch_event()
-        else:
-            message = "Unknown event, terminating: {}".format(str(event))
-            logging.critical(message)
-            raise Exception(message)
-
-    def _process_new_event(self, event: Event):
-        """
-        Process a new process event
-        :param event: Event to be processed
-        """
-        p = event.process
-        p.start_at = self.current_time
-        self.scheduler.put_process(p)
-
-    def _process_complete_event(self):
-        """Process a completion event"""
-        self.running_process.set_completed(self.current_time)
-        self.done.append(self.running_process)
-        logging.debug("%s: Finishing process: %s", self.current_time, self.running_process)
-        self.running_process = None
-
-    def _process_switch_event(self):
-        """Process a round_robin style switch event"""
-        logging.debug('%s: Processing switch event', self.current_time)
-        self.scheduler.put_process(self.running_process)
-        self.running_process = None
+        self.current_time = new_time
+        self.scheduler.current_time = new_time
 
     def bootstrap(self):
         """Bootstrap Event Queue"""
@@ -109,7 +74,7 @@ class Simulator:
                 created_at=activate_at
             )
 
-            self.event_queue.put(
+            self.scheduler.event_queue.put(
                 Event(
                     created_at=activate_at,
                     event_type=EVENT_TYPES['NEW'],
@@ -125,18 +90,18 @@ class Simulator:
         self.bootstrap()
 
         logging.info('%s: Beginning main event loop', self.current_time)
-        while not self.event_queue.empty():
-            event = self.event_queue.get()
-            if self.running_process:
+        while not self.scheduler.event_queue.empty():
+            event = self.scheduler.event_queue.get()
+            if self.scheduler.running_process:
                 # Update usage time if CPU was busy in prev interval
                 diff = event.created_at - self.current_time
                 self.usage += diff.total_seconds()
-                self.running_process.set_used(
+                self.scheduler.running_process.set_used(
                     start=self.current_time,
                     end=event.created_at
                 )
-            self.current_time = event.created_at
-            self.process_event(event)
+            self.update_current_time(event.created_at)
+            self.scheduler.process_event(event)
             self.scheduler.check_running_process()
 
         members = (
@@ -160,7 +125,7 @@ class Simulator:
         modeller = Modeller(path='data')
         logging.info('%s: Writing run stats', self.current_time)
         kwargs = {
-            'in_list': np.array(self.done),
+            'in_list': np.array(self.scheduler.done),
             'path': tag,
             'created_at': self.created_at.timestamp,
             'length': self.config['length'],
