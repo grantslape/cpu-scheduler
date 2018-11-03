@@ -1,5 +1,6 @@
 """Main Simulator"""
 import logging
+import numpy as np
 from pathlib import Path
 from queue import PriorityQueue, Queue
 from arrow import Arrow
@@ -159,7 +160,7 @@ class Simulator:
         modeller = Modeller(path='data')
         logging.info('%s: Writing run stats', self.current_time)
         kwargs = {
-            'in_list': self.done,
+            'in_list': np.array(self.done),
             'path': tag,
             'created_at': self.created_at.timestamp,
             'length': self.config['length'],

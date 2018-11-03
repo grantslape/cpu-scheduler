@@ -18,7 +18,6 @@ class Modeller:
 
     Attributes:
         abs_path: str root path containing csvs to be plotted
-        created_at: Unix timestamp used as folder prefix
     """
     ABS_PATH = 'data'
     DATA_PATH = 'raw_data'
@@ -37,7 +36,7 @@ class Modeller:
         """Get plot path given identifier"""
         return Path('{0}/{1}/{2}'.format(Modeller.ABS_PATH, identifier, Modeller.PLOT_PATH))
 
-    def write_stats(self, in_list: [Process], path: str, **kwargs) -> Path:
+    def write_stats(self, in_list: np.array, path: str, **kwargs) -> Path:
         """
         Write raw process run statistics
         :param in_list: list of processes to be written
@@ -57,6 +56,7 @@ class Modeller:
             writer.writerow(vars(in_list[0]))
             # Write row for each process
             for p in in_list:
+                # TODO: leverage numpy array column summing
                 kwargs['turnaround_time'] += p.total_time
                 kwargs['wait_time'] += p.total_time - p.used
 
