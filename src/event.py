@@ -7,7 +7,6 @@ from src.process import Process
 class Event:
     """
     Basic Event class
-    TODO: Possible replace with named tuple
     """
     def __init__(self,
                  created_at: Arrow = utcnow(),
@@ -25,5 +24,4 @@ class Event:
 
     def __lt__(self, other):
         """Implement comparable"""
-        # Might need to use tuple of attributes
         return self.created_at < other.created_at

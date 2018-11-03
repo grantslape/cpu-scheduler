@@ -17,10 +17,14 @@ class Scheduler:
     away switch statements.
 
     Attributes:
-        parent: reference to the parent simulator
-        method: type of scheduling algorithm to use as enumerated in
+        type: type of scheduling algorithm to use as enumerated in
             commons.SCHEDULE_TYPES
         quantum: Time quantum to preempt and switch to next process if applicable
+        event_queue:
+        done:
+        process_queue:
+        current_time:
+        running_process:
     """
     def __init__(self, method: int, current_time: Arrow, quantum: float = None):
         self.type = method
