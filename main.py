@@ -59,7 +59,6 @@ def main():
     prefix = utcnow()
     length = args.runs
     rates = [i + 1 for i in range(args.max_rate)]
-    # TODO: See about using np.array here.
     results = []
 
     create_logger(log_level=level, tag=str(prefix.timestamp))

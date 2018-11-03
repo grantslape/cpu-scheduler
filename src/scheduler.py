@@ -55,7 +55,9 @@ class Scheduler:
             self.parent.running_process = self.parent.process_queue.get()[1]
         else:
             self.parent.running_process = self.parent.process_queue.get()
-        logging.debug("%s: starting process: %s", self.parent.current_time, self.parent.running_process)
+        logging.debug("%s: starting process: %s",
+                      self.parent.current_time,
+                      self.parent.running_process)
 
     def _fcfs_queue_process(self):
         """start a process with first come first served scheduling"""
@@ -108,8 +110,10 @@ class Scheduler:
             if self.parent.running_process.get_remaining() < self.quantum:
                 logging.debug('scheduling RR completion: %s', self.parent.running_process)
                 self.parent.event_queue.put(
-                    Event(created_at=self.parent.current_time.shift(seconds=self.parent.running_process.get_remaining()),
-                          event_type=EVENT_TYPES['COMPLETE'])
+                    Event(
+                        created_at=self.parent.current_time.shift(seconds=self.parent.running_process.get_remaining()),
+                        event_type=EVENT_TYPES['COMPLETE']
+                    )
                 )
             else:
                 self.parent.event_queue.put(

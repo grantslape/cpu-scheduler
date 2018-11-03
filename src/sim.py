@@ -1,8 +1,8 @@
 """Main Simulator"""
 import logging
-import numpy as np
 from pathlib import Path
 from queue import PriorityQueue, Queue
+import numpy as np
 from arrow import Arrow
 
 from src.event import Event

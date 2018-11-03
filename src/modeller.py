@@ -1,14 +1,12 @@
 """Data Modelling class"""
 import csv
 import logging
+from os import rename
 from pathlib import Path
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from os import rename
 
-from src.process import Process
 from src.commons.commons import calc_high_level_stats
 
 
@@ -56,7 +54,6 @@ class Modeller:
             writer.writerow(vars(in_list[0]))
             # Write row for each process
             for p in in_list:
-                # TODO: leverage numpy array column summing
                 kwargs['turnaround_time'] += p.total_time
                 kwargs['wait_time'] += p.total_time - p.used
 
@@ -74,7 +71,12 @@ class Modeller:
             row = calc_high_level_stats(**kwargs)
             with open('{}/high_{}.csv'.format(self.get_data_path(timestamp), path), 'w', newline='') as high:
                 writer = csv.writer(high)
-                writer.writerow(('turnaround_time', 'throughput', 'utilization', 'avg_process_count'))
+                writer.writerow(
+                    ('turnaround_time',
+                     'throughput',
+                     'utilization',
+                     'avg_process_count')
+                )
                 writer.writerow(row)
 
         if not data_path.exists():
@@ -98,10 +100,10 @@ class Modeller:
         # 3) CPU UTILIZATION
         # 4) AVERAGE # OF PROCESSES IN READY QUEUE (SEE EMAIL)
         # Different color line for each of the scheduler types (RR twice)
-        data = pd.read_csv('{0}.csv'.format(path))
-        data.sort_values('id')
-        data.plot(x='id', y='total_time', kind='bar')
-        plt.savefig('ax')
-        members = (self.abs_path, self.created_at, Modeller.PLOT_PATH, name)
-        identifier = "{0}/{1}/{2}/{3}.png".format(*members)
-        rename('ax.png', identifier)
+        # data = pd.read_csv('{0}.csv'.format(path))
+        # data.sort_values('id')
+        # data.plot(x='id', y='total_time', kind='bar')
+        # plt.savefig('ax')
+        # members = (self.abs_path, self.created_at, Modeller.PLOT_PATH, name)
+        # identifier = "{0}/{1}/{2}/{3}.png".format(*members)
+        # rename('ax.png', identifier)
