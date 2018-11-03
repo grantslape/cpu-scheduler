@@ -91,17 +91,37 @@ class Modeller:
 
     def plot(self, files: [[Path]]):
         """
-
+        TODO: docs
         :return:
         """
         data = pd.concat((pd.read_csv(str(file)) for file in files))
         data = data.sort_values(['type', 'lambda'])
         # fig, ax = plt.subplots(figsize=(12.8, 9.6))
-        fig, ax = plt.subplots(figsize=(12.8, 9.6))
+        fig, axes = \
+            plt.subplots(nrows=2, ncols=2, figsize=(12.8, 9.6))
+
+        turnaround, throughput, utilization, mean = axes.flatten()
 
         for key, group in data.groupby(['type']):
-            ax = group.plot(ax=ax, kind='line', x='lambda', y='utilization', label=key)
+            turnaround = group.plot(ax=turnaround, marker='o', x='lambda', y='turnaround_time', label=key)
+            throughput = group.plot(ax=throughput, marker='o', x='lambda', y='throughput', label=key)
+            utilization = group.plot(ax=utilization, marker='o', x='lambda', y='utilization', label=key)
+            mean = group.plot(ax=mean, marker='o', x='lambda', y='avg_process_count', label=key)
 
+        turnaround.set_title('Turnaround time')
+        throughput.set_title('Throughput')
+        throughput.yaxis.tick_right()
+        utilization.set_title('Utilization')
+        mean.set_title('Avg processes in queue')
+        mean.yaxis.tick_right()
+
+        for ax in fig.axes:
+            ax.set_xlim(0, 30)
+            ax.set_xlabel('$lambda$')
+            ax.set_ylabel('$value$')
+            ax.grid(True)
+
+        fig.tight_layout()
         plt.savefig('ax')
         members = (files[0].parent.parent, Modeller.PLOT_PATH)
         identifier = "{0}/{1}/plot.png".format(*members)

@@ -58,4 +58,4 @@ def calc_high_level_stats(turnaround_time: float,
             turnaround_time / length,
             throughput,
             utilization,
-            given_lambda * wait_time)
+            (1/given_lambda) * wait_time)

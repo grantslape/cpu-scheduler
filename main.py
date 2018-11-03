@@ -77,14 +77,14 @@ def main():
 
             for rate in rates:
                 # concat base_seed
-                np.random.seed(int(str(args.seed) + str(value) + str(rate)))
+                np.random.seed(int(str(args.seed) + str(rate)))
                 kwargs['rate'] = rate
                 results.append(executor.submit(run_sim, **kwargs))
 
             if key == 'RR':
                 kwargs['quantum'] = 0.2
                 for rate in rates:
-                    np.random.seed(int(str(args.seed) + str(value) + str(rate)))
+                    np.random.seed(int(str(args.seed) + str(rate)))
                     kwargs['rate'] = rate
                     results.append(executor.submit(run_sim, **kwargs))
 
@@ -125,5 +125,4 @@ def run_sim(method: int, prefix: Arrow, rate: int, length: int, quantum: float =
 
 
 if __name__ == '__main__':
-    # generate_plots(Path('data/1541280344'))
     main()

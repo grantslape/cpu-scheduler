@@ -1,12 +1,11 @@
 """Main Simulator"""
 import logging
 from pathlib import Path
-from queue import PriorityQueue, Queue
 import numpy as np
 from arrow import Arrow
 
 from src.event import Event
-from src.commons.commons import rand_exp_float, SCHEDULE_TYPES, EVENT_TYPES
+from src.commons.commons import rand_exp_float, EVENT_TYPES
 from src.modeller import Modeller
 from src.process import Process
 from src.scheduler import Scheduler

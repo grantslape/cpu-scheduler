@@ -16,7 +16,7 @@ class Scheduler:
     Algorithm to use for scheduling is baked into each scheduler to abstract
     away switch statements.
 
-    Attributes:
+    TODO: Attributes:
         type: type of scheduling algorithm to use as enumerated in
             commons.SCHEDULE_TYPES
         quantum: Time quantum to preempt and switch to next process if applicable
