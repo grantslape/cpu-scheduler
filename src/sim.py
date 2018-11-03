@@ -131,8 +131,9 @@ class Simulator:
             'length': self.config['length'],
             'usage': self.usage,
             'total_time': (self.current_time - self.created_at).total_seconds(),
-            'given_lambda': self.config['rate']
+            'given_lambda': self.config['rate'],
+            'type': self.scheduler.type,
+            'quantum': self.scheduler.quantum
         }
-        modeller.write_stats(**kwargs)
 
-        return Path()
+        return modeller.write_stats(**kwargs)

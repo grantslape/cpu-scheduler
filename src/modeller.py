@@ -39,12 +39,13 @@ class Modeller:
         Write raw process run statistics
         :param in_list: list of processes to be written
         :param path: str: tag name of run to be written
-        :return: data_path: base Path to stats folder
+        :return: path to parent of data folder
         """
         timestamp = kwargs.get('created_at')
         members = (self.abs_path, timestamp, Modeller.DATA_PATH, path)
         identifier = "{0}/{1}/{2}/{3}.csv".format(*members)
         data_path = Path(identifier)
+        high_level_path = '{}/high_{}.csv'.format(self.get_data_path(timestamp), path)
 
         with open(str(data_path), 'w', newline='') as file:
             kwargs['turnaround_time'] = 0
@@ -69,10 +70,12 @@ class Modeller:
                 writer.writerow(csv_output)
 
             row = calc_high_level_stats(**kwargs)
-            with open('{}/high_{}.csv'.format(self.get_data_path(timestamp), path), 'w', newline='') as high:
+            with open(high_level_path, 'w', newline='') as high:
                 writer = csv.writer(high)
                 writer.writerow(
-                    ('turnaround_time',
+                    ('type',
+                     'lambda',
+                     'turnaround_time',
                      'throughput',
                      'utilization',
                      'avg_process_count')
@@ -84,26 +87,22 @@ class Modeller:
             logging.critical(message)
             raise Exception(message)
 
-        return data_path
+        return Path(high_level_path).parent
 
-    def plot(self, path: str, name: str):
+    def plot(self, files: [[Path]]):
         """
-        Example of plotting a given CSV
-        :param path: path to CSV to be plotted
-        :param name: name of csv
+
         :return:
         """
-        # TODO: THIS IS COOL AND ALL BUT WE NEED TO PLOT LAMBDA AS X
-        # AND HAVE 4 PLOTS FOR EACH OF THE FOLLOWING METRICS AS Y:
-        # 1) AVERAGE TURNAROUND TIME
-        # 2) TOTAL THROUGHPUT
-        # 3) CPU UTILIZATION
-        # 4) AVERAGE # OF PROCESSES IN READY QUEUE (SEE EMAIL)
-        # Different color line for each of the scheduler types (RR twice)
-        # data = pd.read_csv('{0}.csv'.format(path))
-        # data.sort_values('id')
-        # data.plot(x='id', y='total_time', kind='bar')
-        # plt.savefig('ax')
-        # members = (self.abs_path, self.created_at, Modeller.PLOT_PATH, name)
-        # identifier = "{0}/{1}/{2}/{3}.png".format(*members)
-        # rename('ax.png', identifier)
+        data = pd.concat((pd.read_csv(str(file)) for file in files))
+        data = data.sort_values(['type', 'lambda'])
+        # fig, ax = plt.subplots(figsize=(12.8, 9.6))
+        fig, ax = plt.subplots(figsize=(12.8, 9.6))
+
+        for key, group in data.groupby(['type']):
+            ax = group.plot(ax=ax, kind='line', x='lambda', y='utilization', label=key)
+
+        plt.savefig('ax')
+        members = (files[0].parent.parent, Modeller.PLOT_PATH)
+        identifier = "{0}/{1}/plot.png".format(*members)
+        rename('ax.png', identifier)

@@ -42,7 +42,7 @@ def create_logger(log_level: int, tag: str):
     logging.basicConfig(
         filename=str(log_path),
         level=log_level,
-        format='%(threadName)s: %(levelname)s - %(message)s'
+        format='%(processName)s: %(levelname)s - %(message)s'
     )
 
 
@@ -88,20 +88,20 @@ def main():
                     kwargs['rate'] = rate
                     results.append(executor.submit(run_sim, **kwargs))
 
-    for result in results:
-        logging.debug(result.result())
-    generate_plots()
+    generate_plots(results[0].result())
 
-    print("Sim done, execution time: {}".format((utcnow() - start).total_seconds()))
+    message = "Sim done, execution time: {}".format((utcnow() - start).total_seconds())
+    print(message)
+    logging.info(message)
 
 
-def generate_plots():
+def generate_plots(path: Path):
     """
-    TODO: Implement.  Glob for high pattern in data directory
-    then generate dataframes from individual columns with burst lambda
-    :return:
+    generate dataframes from individual columns with burst lambda
+    :param: path: Path to stats directory
     """
-    pass
+    runs = list(path.glob('**/high*.csv'))
+    Modeller().plot(runs)
 
 
 def run_sim(method: int, prefix: Arrow, rate: int, length: int, quantum: float = None):
@@ -115,7 +115,7 @@ def run_sim(method: int, prefix: Arrow, rate: int, length: int, quantum: float =
     :param quantum:
     :return:
     """
-    Simulator(
+    return Simulator(
         method=method,
         created_at=prefix,
         quantum=quantum,
@@ -125,4 +125,5 @@ def run_sim(method: int, prefix: Arrow, rate: int, length: int, quantum: float =
 
 
 if __name__ == '__main__':
+    # generate_plots(Path('data/1541280344'))
     main()

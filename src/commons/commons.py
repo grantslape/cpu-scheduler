@@ -48,7 +48,14 @@ def calc_high_level_stats(turnaround_time: float,
     """
     utilization = usage / total_time
     throughput = length / total_time
-    return (turnaround_time / length,
+    schedule_type = kwargs.get('type')
+    # Hack for now to support plotting
+    if schedule_type == SCHEDULE_TYPES['RR'] and kwargs.get('quantum') > 0.01:
+        schedule_type = 4
+
+    return (schedule_type,
+            given_lambda,
+            turnaround_time / length,
             throughput,
             utilization,
             given_lambda * wait_time)
