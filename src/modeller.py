@@ -5,9 +5,10 @@ from os import rename
 from pathlib import Path
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-
 from src.commons.commons import calc_high_level_stats
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 
 class Modeller:
