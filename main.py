@@ -88,14 +88,8 @@ def main():
                     kwargs['rate'] = rate
                     results.append(executor.submit(run_sim, **kwargs))
 
-    # TODO: not compatible with 3.4
-    try:
-        data = results[0].result()
-        generate_plots(data)
-    except Exception as ex:
-        message = 'Exception raise: {}'.format(ex)
-        logging.critical(message)
-        print(message)
+    data = results[0].result()
+    generate_plots(data)
 
     message = "Sim done, execution time: {}".format((utcnow() - start).total_seconds())
     print(message)
