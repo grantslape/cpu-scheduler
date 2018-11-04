@@ -37,6 +37,7 @@ class Modeller:
     def write_stats(self, in_list: np.array, path: str, **kwargs) -> Path:
         """
         Write raw process run statistics
+        TODO: In an ideal world there would not be so many magic strings here
         :param in_list: list of processes to be written
         :param path: str: tag name of run to be written
         :return: path to parent of data folder
@@ -52,8 +53,15 @@ class Modeller:
             kwargs['wait_time'] = 0
             writer = csv.writer(file, delimiter=',')
             # Write CSV Headers
-            # TODO: This doesn't work with 3.4.9
-            writer.writerow(vars(in_list[0]))
+            writer.writerow((
+                'id',
+                'created_at',
+                'start_at',
+                'run_time',
+                'totaL_time',
+                'used',
+                'completed_at'
+            ))
             # Write row for each process
             for p in in_list:
                 kwargs['turnaround_time'] += p.total_time
