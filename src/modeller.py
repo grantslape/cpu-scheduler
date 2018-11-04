@@ -52,6 +52,7 @@ class Modeller:
             kwargs['wait_time'] = 0
             writer = csv.writer(file, delimiter=',')
             # Write CSV Headers
+            # TODO: This doesn't work with 3.4.9
             writer.writerow(vars(in_list[0]))
             # Write row for each process
             for p in in_list:
