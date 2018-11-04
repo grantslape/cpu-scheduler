@@ -58,7 +58,7 @@ class Modeller:
                 'created_at',
                 'start_at',
                 'run_time',
-                'totaL_time',
+                'total_time',
                 'used',
                 'completed_at'
             ))
