@@ -3,11 +3,15 @@
 
 A simple discrete discrete-time event simulator for a number of CPU schedulers on a single CPU system.
 
+![Example Image](https://i.imgur.com/O5dnxf2.png)
+
 ## Dependencies
 * Python 3
 * Pandas
 * Matplotlib
 * Others, see `requirements.txt`
+
+The dependencies take a while to install, (especially Pandas) so just be patient during first time setup.
 
 ## Usage
 
