@@ -6,7 +6,7 @@ from arrow import Arrow
 
 from src.event import Event
 from src.process import Process
-from src.commons.commons import SCHEDULE_TYPES, EVENT_TYPES
+from src.commons.commons import SCHEDULE_TYPES, EVENT_TYPES, rand_exp_float
 
 
 class Scheduler:
@@ -26,9 +26,9 @@ class Scheduler:
         current_time: current system time, set by parent
         running_process: currently running process
     """
-    def __init__(self, method: int, current_time: Arrow, quantum: float = None):
+    def __init__(self, method: int, current_time: Arrow, config: dict):
         self.type = method
-        self.quantum = quantum
+        self.config = config
         self.event_queue = PriorityQueue()
         self.done = []
         self.process_queue = PriorityQueue() if method != SCHEDULE_TYPES['RR'] else Queue()
@@ -105,7 +105,7 @@ class Scheduler:
         """start a process with round robin scheduling"""
         if not self.running_process and not self.process_queue.empty():
             self._start_process()
-            if self.running_process.get_remaining() < self.quantum:
+            if self.running_process.get_remaining() < self.config['quantum']:
                 logging.debug('scheduling RR completion: %s', self.running_process)
                 self.event_queue.put(
                     Event(
@@ -115,7 +115,7 @@ class Scheduler:
                 )
             else:
                 self.event_queue.put(
-                    Event(created_at=self.current_time.shift(seconds=self.quantum),
+                    Event(created_at=self.current_time.shift(seconds=self.config['quantum']),
                           event_type=EVENT_TYPES['SWITCH'])
                 )
 
@@ -161,6 +161,27 @@ class Scheduler:
         p = event.process
         p.start_at = self.current_time
         self.put_process(p)
+
+        # Spawn the next process
+        activate_at = self.current_time.shift(
+            seconds=rand_exp_float(self.config['rate']))
+        event = self.create_event(activate_at, p.id + 1)
+        self.event_queue.put(event)
+        logging.debug('Queued creation event for process: %s', event.process)
+
+    def create_event(self, activate_at: Arrow, p_id: int) -> Event:
+        """Create a new process"""
+        process = Process(
+            process_id=p_id,
+            run_time=rand_exp_float(self.config['burst_lambda']),
+            created_at=activate_at
+        )
+
+        return Event(
+            created_at=activate_at,
+            event_type=EVENT_TYPES['NEW'],
+            process=process
+        )
 
     def _process_complete_event(self):
         """Process a completion event"""

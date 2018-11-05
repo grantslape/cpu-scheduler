@@ -48,8 +48,8 @@ class Simulator:
         }
 
         self.scheduler = Scheduler(method=method,
-                                   quantum=self.config['quantum'],
-                                   current_time=self.current_time)
+                                   current_time=self.current_time,
+                                   config=self.config)
 
     def update_current_time(self, new_time: Arrow):
         """
@@ -60,27 +60,13 @@ class Simulator:
         self.scheduler.current_time = new_time
 
     def bootstrap(self):
-        """Bootstrap Event Queue"""
-        last_event_time = self.current_time
-        for i in range(self.config['length']):
-            activate_at = last_event_time.shift(
-                seconds=rand_exp_float(self.config['rate']))
-
-            process = Process(
-                process_id=i + 1,
-                run_time=rand_exp_float(self.config['burst_lambda']),
-                created_at=activate_at
-            )
-
-            self.scheduler.event_queue.put(
-                Event(
-                    created_at=activate_at,
-                    event_type=EVENT_TYPES['NEW'],
-                    process=process
-                )
-            )
-            logging.debug('Queued creation event for process: %s', process)
-            last_event_time = activate_at
+        """
+        Queue 1 creation event to start simulation
+        """
+        activate_at = self.current_time.shift(
+            seconds=rand_exp_float(self.config['rate'])
+        )
+        self.scheduler.event_queue.put(self.scheduler.create_event(activate_at, 1))
 
     def run(self):
         """Run the whole simulation"""
@@ -88,7 +74,7 @@ class Simulator:
         self.bootstrap()
 
         logging.info('%s: Beginning main event loop', self.current_time)
-        while not self.scheduler.event_queue.empty():
+        while len(self.scheduler.done) < self.config['length']:
             event = self.scheduler.event_queue.get()
             if self.scheduler.running_process:
                 # Update usage time if CPU was busy in prev interval
@@ -131,7 +117,7 @@ class Simulator:
             'total_time': (self.current_time - self.created_at).total_seconds(),
             'given_lambda': self.config['rate'],
             'type': self.scheduler.type,
-            'quantum': self.scheduler.quantum
+            'quantum': self.config['quantum']
         }
 
         return modeller.write_stats(**kwargs)
