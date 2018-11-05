@@ -4,11 +4,11 @@ VIRTUAL_ENV="env"
 
 echo "Checking for existing virtual environment"
 if [ ! -d "$VIRTUAL_ENV" ]; then
-    echo 'No virtualenv found!'
-    echo "creating virtualenv 'env' "
+    echo 'No virtual environment found!'
+    echo "creating virtual environment $VIRTUAL_ENV "
     python3 -m venv env
 else
-    echo "Virtual Environment found!"
+    echo "virtual environment found!"
 fi
 
 echo "activating virtual environment"
@@ -16,4 +16,5 @@ source env/bin/activate
 echo "installing requirements"
 pip install -r requirements.txt
 echo "Running simulation with default configuration"
-python main.py 1000 5 1234
+echo "python main.py 10000 30 1234"
+python main.py 10000 30 1234

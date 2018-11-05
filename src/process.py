@@ -18,13 +18,6 @@ class Process:
                  run_time: float,
                  process_id: int,
                  created_at: Arrow):
-        """
-        Constructor for Process
-        :param run_time: Total runtime of process in seconds
-        TODO attributes
-        :param process_id:
-        :param created_at:
-        """
         self.id = process_id
         self.created_at = created_at
         self.start_at = None
@@ -34,7 +27,7 @@ class Process:
         self.completed_at = None
 
     def __lt__(self, other) -> bool:
-        """Implement comparable"""
+        """Implement comparable for Priority Queueing"""
         priority = (self.created_at,
                     self.run_time - self.used,
                     self.run_time)
@@ -44,7 +37,7 @@ class Process:
         return priority < other_priority
 
     def __repr__(self):
-        """JSON output"""
+        """JSON output for log file"""
         return '{"id":' + str(self.id) + ',"created_at":"' + str(self.created_at) + \
                '","start_at":"' + str(self.start_at) + '","run_time":"' + \
                str(self.run_time) + '","total_time":"' + str(self.total_time) + \
@@ -65,7 +58,7 @@ class Process:
         Set partial amount of time used
         :param start: Arrow object representing work start time
         :param end: Arrow object representing work end time
-        :return: time remaining in sec as float
+        :return: float time remaining in sec
         """
         elapsed = (end - start).total_seconds()
         self.used += elapsed

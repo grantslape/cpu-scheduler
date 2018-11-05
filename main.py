@@ -51,36 +51,38 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('runs', type=int, help='Number of trials')
     parser.add_argument('max_rate', type=int, help='max processes per second')
-    parser.add_argument('seed', type=int, help='base seed for PRNG. base_seed + type + rate')
+    parser.add_argument('seed', type=int, help='base seed for PRNG. base_seed + rate')
     parser.add_argument('-v', '--verbose', action='store_true', help='logs use a lot of disk space')
     args = parser.parse_args()
 
-    level = logging.DEBUG if args.verbose else logging.INFO
-    prefix = utcnow()
+    start = utcnow()
     length = args.runs
     rates = [i + 1 for i in range(args.max_rate)]
     results = []
 
-    create_logger(log_level=level, tag=str(prefix.timestamp))
+    # Configure Logger
+    level = logging.DEBUG if args.verbose else logging.INFO
+    create_logger(log_level=level, tag=str(start.timestamp))
 
-    start = utcnow()
-
+    print('Sim running, please be patient')
+    # Use a process pool to run simulations simultaneously
     with concurrent.futures.ProcessPoolExecutor() as executor:
         for key, value in SCHEDULE_TYPES.items():
             kwargs = {
                 'method': value,
-                'prefix': prefix,
+                'prefix': start,
                 'quantum': 0.01,
                 'rate': None,
                 'length': length
             }
 
             for rate in rates:
-                # concat base_seed
+                # This ensures a consistent seed is used across schedule methods
                 np.random.seed(int(str(args.seed) + str(rate)))
                 kwargs['rate'] = rate
                 results.append(executor.submit(run_sim, **kwargs))
 
+            # Run everything again for RR with the second quantum value
             if key == 'RR':
                 kwargs['quantum'] = 0.2
                 for rate in rates:
@@ -88,11 +90,13 @@ def main():
                     kwargs['rate'] = rate
                     results.append(executor.submit(run_sim, **kwargs))
 
+    # Get the path to high level stats and plot them
     data = results[0].result()
     generate_plots(data)
 
     message = "Sim done, execution time: {}".format((utcnow() - start).total_seconds())
     print(message)
+    print('Plot is at {}/plots/plot.png'.format(str(data.parent)))
     logging.info(message)
 
 
@@ -102,19 +106,22 @@ def generate_plots(path: Path):
     :param: path: Path to stats directory
     """
     runs = list(path.glob('**/high*.csv'))
-    Modeller().plot(runs)
+    Modeller.plot(runs)
 
 
-def run_sim(method: int, prefix: Arrow, rate: int, length: int, quantum: float = None):
+def run_sim(method: int,
+            prefix: Arrow,
+            rate: int,
+            length: int,
+            quantum: float = None) -> Path:
     """
     run sim with given parameters
-    :param method:
-    :param prefix:
-    :param level:
-    :param rate:
-    :param length:
-    :param quantum:
-    :return:
+    :param method: scheduler method from commons.SCHEDULE_TYPES
+    :param prefix: folder prefix for data, usually unix timestamp
+    :param rate: rate of process arrival
+    :param length: length of simulation in processes
+    :param quantum: time quantum (only for round robin)
+    :return: Path to high level stats
     """
     return Simulator(
         method=method,

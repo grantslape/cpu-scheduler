@@ -18,7 +18,7 @@ def rand_exp_float(given_lambda: float) -> float:
     """
     Generate a random number that follows an exponential distribution
     :param given_lambda: lambda for exponential distribution
-    :return psuedorandom number following exp distribution
+    :return pseudo-random number following exp distribution
     """
     if given_lambda > 1:
         given_lambda = 1/given_lambda
@@ -48,10 +48,17 @@ def calc_high_level_stats(turnaround_time: float,
     """
     utilization = usage / total_time
     throughput = length / total_time
-    schedule_type = kwargs.get('type')
-    # Hack for now to support plotting
-    if schedule_type == SCHEDULE_TYPES['RR'] and kwargs.get('quantum') > 0.01:
-        schedule_type = 4
+    int_schedule_type = kwargs.get('type')
+    if int_schedule_type == SCHEDULE_TYPES['FCFS']:
+        schedule_type = 'First Come First Served'
+    elif int_schedule_type == SCHEDULE_TYPES['SJF']:
+        schedule_type = 'Shortest Job First'
+    elif int_schedule_type == SCHEDULE_TYPES['RR'] and kwargs.get('quantum') == 0.01:
+        schedule_type = 'Round Robin 0.01'
+    elif int_schedule_type == SCHEDULE_TYPES['RR'] and kwargs.get('quantum') == 0.2:
+        schedule_type = 'Round Robin 0.2'
+    else:
+        schedule_type = 'Unknown'
 
     return (schedule_type,
             given_lambda,

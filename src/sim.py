@@ -20,15 +20,14 @@ class Simulator:
     on each event process.
 
     Attributes:
-        event_queue: Priority Queue of events to be processed
-        process_queue: Priority Queue of processed to be executed
-        done: list of completed processes
         current_time: the current system time
         usage: total CPU usage time in milliseconds
-        length: number of trials to run
         burst_lambda: average process execution time
-        running_process: currently running process
+        process_rate: rate of process arrival
+        length: length of simulation in processes
+        quantum: time quantum (only for round robin)
         created_at: used as file tag
+        method: scheduling method (see commons.SCHEDULE_TYPES)
     """
     def __init__(self,
                  created_at: Arrow,
@@ -55,7 +54,7 @@ class Simulator:
     def update_current_time(self, new_time: Arrow):
         """
         Update system time
-        :param new_time:
+        :param new_time: Arrow datetime
         """
         self.current_time = new_time
         self.scheduler.current_time = new_time

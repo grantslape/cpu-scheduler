@@ -20,11 +20,11 @@ class Scheduler:
         type: type of scheduling algorithm to use as enumerated in
             commons.SCHEDULE_TYPES
         quantum: Time quantum to preempt and switch to next process if applicable
-        event_queue:
-        done:
-        process_queue:
-        current_time:
-        running_process:
+        event_queue: PriorityQueue of events to be processed
+        done: list of done processes
+        process_queue: PriorityQueue|Queue of processes to be processed
+        current_time: current system time, set by parent
+        running_process: currently running process
     """
     def __init__(self, method: int, current_time: Arrow, quantum: float = None):
         self.type = method
@@ -49,7 +49,10 @@ class Scheduler:
             raise Exception(message)
 
     def put_process(self, process: Process):
-        """Insert a process into the queue"""
+        """
+        Insert a process into the queue
+        :param process: Process to be inserted
+        """
         logging.debug("%s: Inserting process: %s", self.current_time, process)
         if self.type == SCHEDULE_TYPES['FCFS']:
             self.process_queue.put((process.created_at, process))
@@ -68,21 +71,6 @@ class Scheduler:
         logging.debug("%s: starting process: %s",
                       self.current_time,
                       self.running_process)
-
-    def _fcfs_queue_process(self):
-        """start a process with first come first served scheduling"""
-        if not self.running_process and not self.process_queue.empty():
-            self._start_process()
-            # Queue completion event
-            create = self.current_time.shift(seconds=self.running_process.run_time)
-            self.event_queue.put(
-                Event(created_at=create,
-                      event_type=EVENT_TYPES['COMPLETE'])
-            )
-
-    def _sjf_insert_process(self, process: Process):
-        """Insert process by sjf"""
-        self.process_queue.put((process.run_time - process.used, process))
 
     def _sjf_queue_process(self):
         """start a process with shortest job first scheduling"""
@@ -131,6 +119,24 @@ class Scheduler:
                           event_type=EVENT_TYPES['SWITCH'])
                 )
 
+    def _fcfs_queue_process(self):
+        """start a process with first come first served scheduling"""
+        if not self.running_process and not self.process_queue.empty():
+            self._start_process()
+            # Queue completion event
+            create = self.current_time.shift(seconds=self.running_process.run_time)
+            self.event_queue.put(
+                Event(created_at=create,
+                      event_type=EVENT_TYPES['COMPLETE'])
+            )
+
+    def _sjf_insert_process(self, process: Process):
+        """
+        Insert process by sjf
+        :param process: Process to be inserted
+        """
+        self.process_queue.put((process.run_time - process.used, process))
+
     def process_event(self, event: Event):
         """
         Switch to process events
@@ -162,7 +168,6 @@ class Scheduler:
         self.done.append(self.running_process)
         logging.debug("%s: Finishing process: %s", self.current_time, self.running_process)
         self.running_process = None
-        return self.running_process
 
     def _process_switch_event(self):
         """Process a round_robin style switch event"""
