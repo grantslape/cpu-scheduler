@@ -13,6 +13,7 @@ fi
 
 echo "activating virtual environment"
 source env/bin/activate
+pip install --upgrade setuptools
 echo "installing requirements"
 pip install -r requirements.txt
 echo "Running simulation with default configuration"
