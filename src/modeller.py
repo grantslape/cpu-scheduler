@@ -107,7 +107,6 @@ class Modeller:
         then sort the resultant dataframe by schedule type and lambda value
         plot throughput, turnaround time, utilization, mean.
         Plot this and save to a file.
-        :return:
         """
         # Read data
         data = pd.concat((pd.read_csv(str(file)) for file in files))
@@ -130,10 +129,10 @@ class Modeller:
         utilization.set_title('Utilization')
         mean.set_title('Avg processes in queue')
 
-        throughput.set_ylabel('$Processes/second$')
+        throughput.set_ylabel('$processes/second$')
         turnaround.set_ylabel('$seconds$')
         utilization.set_ylabel('$value$')
-        mean.set_ylabel('$Processes$')
+        mean.set_ylabel('$processes$')
 
         throughput.yaxis.set_label_position('right')
         mean.yaxis.set_label_position('right')

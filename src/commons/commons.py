@@ -37,14 +37,14 @@ def calc_high_level_stats(turnaround_time: float,
     # 1) AVERAGE TURNAROUND TIME
     # 2) TOTAL THROUGHPUT
     # 3) CPU UTILIZATION
-    # 4) AVERAGE # OF PROCESSES IN READY QUEUE (SEE EMAIL)
-    :param turnaround_time:
-    :param wait_time:
-    :param length:
-    :param usage:
-    :param total_time:
-    :param given_lambda:
-    :return:
+    # 4) AVERAGE # OF PROCESSES IN READY QUEUE
+    :param turnaround_time: Total Run time / Number of Processes
+    :param wait_time: Total wait time of all processes
+    :param length: Number of Processes
+    :param usage: Total CPU usage in seconds
+    :param total_time: Total simulation time in seconds
+    :param given_lambda: process arrival rate
+    :return: tuple to be written to csv
     """
     utilization = usage / total_time
     throughput = length / total_time

@@ -132,5 +132,28 @@ def run_sim(method: int,
     ).run()
 
 
+def run_once():
+    """Run simulation once with given values"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('type', type=int, help='scheduler type [1-3]')
+    parser.add_argument('rate', type=int, help='rate of process arrival')
+    parser.add_argument('service_time', type=float, help='average svc time')
+    parser.add_argument('quantum', type=float, required=False, help='quantum value (sec)')
+    args = parser.parse_args()
+
+    length = 10000
+    start = utcnow()
+    prefix = str(start.timestamp)
+    level = logging.INFO
+    create_logger(log_level=level, tag=prefix)
+
+    members = (args.type, args.rate, args.service_time, args.quantum)
+    message = 'Running Sim with values\nType:\t{0}\nRate\t{1}\nService Time\t{2}\nQuantum\t{3}'.format(*members)
+    logging.info(message)
+    print(message)
+
+    run_sim(method=args.type, prefix=start, quantum=args.quantum, rate=args.rate, length=length)
+
+
 if __name__ == '__main__':
     main()

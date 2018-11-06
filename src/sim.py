@@ -4,11 +4,10 @@ from pathlib import Path
 import numpy as np
 from arrow import Arrow
 
-from src.event import Event
-from src.commons.commons import rand_exp_float, EVENT_TYPES
+from src.commons.commons import rand_exp_float
 from src.modeller import Modeller
-from src.process import Process
 from src.scheduler import Scheduler
+from main import run_once
 
 
 class Simulator:
