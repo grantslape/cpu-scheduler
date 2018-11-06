@@ -106,6 +106,10 @@ class Simulator:
         """
         modeller = Modeller(path='data')
         logging.info('%s: Writing run stats', self.current_time)
+
+        # offload processes still in queue
+        self.scheduler.offload()
+
         kwargs = {
             'in_list': np.array(self.scheduler.done),
             'path': tag,

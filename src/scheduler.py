@@ -63,11 +63,7 @@ class Scheduler:
 
     def _start_process(self):
         """Start the next process from the queue"""
-        # Hack to support simple queues.
-        if isinstance(self.process_queue, PriorityQueue):
-            self.running_process = self.process_queue.get()[1]
-        else:
-            self.running_process = self.process_queue.get()
+        self.running_process = self.get_process()
         logging.debug("%s: starting process: %s",
                       self.current_time,
                       self.running_process)
@@ -195,3 +191,18 @@ class Scheduler:
         logging.debug('%s: Processing switch event', self.current_time)
         self.put_process(self.running_process)
         self.running_process = None
+
+    def get_process(self) -> Process:
+        """get next process"""
+        # Hack to support simple queues.
+        if isinstance(self.process_queue, PriorityQueue):
+            return self.process_queue.get()[1]
+        else:
+            return self.process_queue.get()
+
+    def offload(self):
+        """Offload current process queue"""
+        while not self.process_queue.empty():
+            process = self.get_process()
+            process.set_completed(self.current_time)
+            self.done.append(process)
