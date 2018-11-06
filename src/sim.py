@@ -7,7 +7,6 @@ from arrow import Arrow
 from src.commons.commons import rand_exp_float
 from src.modeller import Modeller
 from src.scheduler import Scheduler
-from main import run_once
 
 
 class Simulator:
@@ -67,7 +66,7 @@ class Simulator:
         )
         self.scheduler.event_queue.put(self.scheduler.create_event(activate_at, 1))
 
-    def run(self):
+    def run(self) -> Path:
         """Run the whole simulation"""
         logging.info('%s: Bootstrapping event queue', self.current_time)
         self.bootstrap()

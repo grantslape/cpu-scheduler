@@ -3,7 +3,7 @@
 
 A simple discrete discrete-time event simulator for a number of CPU schedulers on a single CPU system.
 
-![Example Image](https://i.imgur.com/O5dnxf2.png)
+![Example Image](https://i.imgur.com/ahQj03y.png)
 
 ## Dependencies
 * Python 3
