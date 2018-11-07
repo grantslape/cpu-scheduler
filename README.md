@@ -21,7 +21,6 @@ $ source run.sh
 Sim running, please be patient
 Sim done, execution time: 168.723174
 Plot is at data/1541391135/plots/plot.png
-$ deactivate
 $ open data/1541391135/plots/plot.png
 ```
 
