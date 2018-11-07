@@ -1,4 +1,5 @@
 """Data Modelling class"""
+# pylint: disable=wrong-import-position,wrong-import-order
 import csv
 import logging
 from os import rename
@@ -6,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from src.commons.commons import calc_high_level_stats
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -107,6 +109,7 @@ class Modeller:
         then sort the resultant dataframe by schedule type and lambda value
         plot throughput, turnaround time, utilization, mean.
         Plot this and save to a file.
+        :param files: A list of Paths to high level stats to be plotted
         """
         # Read data
         data = pd.concat((pd.read_csv(str(file)) for file in files))
@@ -118,10 +121,26 @@ class Modeller:
 
         # Plot data by type and given statistics
         for key, group in data.groupby(['type']):
-            turnaround = group.plot(ax=turnaround, marker='o', x='lambda', y='turnaround_time', label=key)
-            throughput = group.plot(ax=throughput, marker='o', x='lambda', y='throughput', label=key)
-            utilization = group.plot(ax=utilization, marker='o', x='lambda', y='utilization', label=key)
-            mean = group.plot(ax=mean, marker='o', x='lambda', y='avg_process_count', label=key)
+            turnaround = group.plot(ax=turnaround,
+                                    marker='o',
+                                    x='lambda',
+                                    y='turnaround_time',
+                                    label=key)
+            throughput = group.plot(ax=throughput,
+                                    marker='o',
+                                    x='lambda',
+                                    y='throughput',
+                                    label=key)
+            utilization = group.plot(ax=utilization,
+                                     marker='o',
+                                     x='lambda',
+                                     y='utilization',
+                                     label=key)
+            mean = group.plot(ax=mean,
+                              marker='o',
+                              x='lambda',
+                              y='avg_process_count',
+                              label=key)
 
         # Format and label individual plots
         turnaround.set_title('Turnaround time')

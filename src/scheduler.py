@@ -101,11 +101,12 @@ class Scheduler:
         """start a process with round robin scheduling"""
         if not self.running_process and not self.process_queue.empty():
             self._start_process()
-            if self.running_process.get_remaining() < self.config['quantum']:
+            remain = self.running_process.get_remaining()
+            if remain < self.config['quantum']:
                 logging.debug('scheduling RR completion: %s', self.running_process)
                 self.event_queue.put(
                     Event(
-                        created_at=self.current_time.shift(seconds=self.running_process.get_remaining()),
+                        created_at=self.current_time.shift(seconds=remain),
                         event_type=EVENT_TYPES['COMPLETE']
                     )
                 )
@@ -197,8 +198,7 @@ class Scheduler:
         # Hack to support simple queues.
         if isinstance(self.process_queue, PriorityQueue):
             return self.process_queue.get()[1]
-        else:
-            return self.process_queue.get()
+        return self.process_queue.get()
 
     def offload(self):
         """Offload current process queue"""

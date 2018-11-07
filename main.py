@@ -54,7 +54,9 @@ def main():
     parser.add_argument('seed', type=int, help='base seed for PRNG. base_seed + rate')
     verbose_help = 'Set Log level to debug.  Will use a lot of disk space'
     parser.add_argument('-v', '--verbose', action='store_true', help=verbose_help)
-    parser.add_argument('-o', '--once', action='store_true', help='Run the simulation only once.  Uses special args')
+    parser.add_argument('-o', '--once',
+                        action='store_true',
+                        help='Run the simulation only once.  Uses special args')
     parser.add_argument('--type', type=int, required=False, help='scheduler type [1-3]')
     parser.add_argument('--service_time', type=float, required=False, help='average svc time')
     parser.add_argument('--quantum', type=float, required=False, help='quantum value (sec)')
@@ -145,11 +147,19 @@ def run_sim(method: int,
 def run_once(args, start: Arrow) -> Path:
     """Run simulation once with given values"""
     members = (args.type, args.max_rate, args.service_time, args.quantum)
-    message = 'Running Sim with values\nType:\t{0}\nRate\t{1}\nService Time\t{2}\nQuantum\t{3}'.format(*members)
+    message = 'Running Sim with values\n' \
+              'Type:\t{0}\n' \
+              'Rate\t{1}\n' \
+              'Service Time\t{2}\n' \
+              'Quantum\t{3}'.format(*members)
     logging.info(message)
     print(message)
 
-    return run_sim(method=args.type, prefix=start, quantum=args.quantum, rate=args.max_rate, length=args.runs)
+    return run_sim(method=args.type,
+                   prefix=start,
+                   quantum=args.quantum,
+                   rate=args.max_rate,
+                   length=args.runs)
 
 
 if __name__ == '__main__':
